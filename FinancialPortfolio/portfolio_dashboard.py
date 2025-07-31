@@ -9,10 +9,11 @@ app = dash.Dash(__name__)
 
 # Your portfolio holdings with quantities TODO Fetch this data from DB
 owned_stocks = [
-    {"ticker": "AAPL", "quantity": 10},
-    {"ticker": "MSFT", "quantity": 5},
-    {"ticker": "TSLA", "quantity": 5},
-    {"ticker": "HST", "quantity": 5}
+    {"ticker": "AAPL", "quantity": 10, "purchased_date": "2025-05-20", "purchased_cost": 400},
+    {"ticker": "MSFT", "quantity": 5, "purchased_date": "2025-05-20", "purchased_cost": 120},
+    {"ticker": "TSLA", "quantity": 5, "purchased_date": "2025-05-20", "purchased_cost": 100},
+    {"ticker": "HST", "quantity": 5, "purchased_date": "2025-05-20", "purchased_cost": 100},
+    {"ticker": "BTC-USD", "quantity": 5, "purchased_date": "2025-05-20", "purchased_cost": 8000}
 ]
 
 def fetch_portfolio_data(owned):
@@ -27,6 +28,7 @@ def fetch_portfolio_data(owned):
     for stock in owned:
         ticker = stock["ticker"]
         quantity = stock["quantity"]
+        purchased_cost = stock["purchased_cost"]
 
         try:
             prev_price = close[ticker].iloc[-2]
@@ -34,12 +36,22 @@ def fetch_portfolio_data(owned):
             change_pct = ((curr_price - prev_price) / prev_price) * 100
             total_value = curr_price * quantity
 
+            if total_value - purchased_cost > 0:
+                trend ="▲"
+            elif total_value - purchased_cost == 0:
+                trend = "➖"
+            else:
+                trend = "🔻"
+
             updated_owned.append({
                 "ticker": ticker,
                 "quantity": quantity,
                 "price": round(curr_price, 4),
                 "value": round(total_value, 4),
                 "change": round(change_pct, 4),
+                "purchased_date": datetime.date(2025, 5, 25),
+                "purchased_cost": purchased_cost,
+                "trend": trend
             })
 
             record = {"ticker": ticker, "change": round(change_pct, 2)}
@@ -50,23 +62,16 @@ def fetch_portfolio_data(owned):
         except Exception as e:
             print(f"Error fetching data for {ticker}: {e}")
 
-    # Sort gainers/losers by change
     gainers.sort(key=lambda x: x["change"], reverse=True)
     losers.sort(key=lambda x: x["change"])
-
-    # Combine for market movers sorted by absolute change desc
     market_movers = gainers + losers
     market_movers.sort(key=lambda x: abs(x["change"]), reverse=True)
 
     return updated_owned, gainers, losers, market_movers
 
-# Fetch real data on app start
 updated_owned, gainers, losers, market_movers = fetch_portfolio_data(owned_stocks)
-
-# Convert updated_owned to DataFrame
 owned_df = pd.DataFrame(updated_owned)
 
-# Add 'Long Name' using yfinance info
 def get_company_name(ticker):
     try:
         return yf.Ticker(ticker).info.get("shortName", ticker)
@@ -74,15 +79,13 @@ def get_company_name(ticker):
         return ticker
 
 owned_df["Name"] = owned_df["ticker"].apply(get_company_name)
+owned_df = owned_df[["trend", "Name", "ticker", "quantity", "purchased_date", "purchased_cost", "price", "value"]]
+owned_df.columns = ["", "Long Name", "Short Name", "Shares Owned", "Date Purchased", "Purchase Cost", "Current Market Price", "Current Value"]
 
-# Reorder columns for the table
-owned_df = owned_df[["Name", "ticker", "quantity", "price", "value"]]
-owned_df.columns = ["Long Name", "Short Name", "Shares Owned", "Market Price", "Total Value"]
-
-# Create Dash Table
 owned_stocks_table = go.Figure(
     data=[
         go.Table(
+            columnwidth=[35, 150, 80, 80, 120, 120, 150, 120, 80],
             header=dict(
                 values=[f"<b>{col}</b>" for col in owned_df.columns],
                 fill_color='lightgrey',
@@ -142,7 +145,7 @@ market_movers_table = go.Figure(
     data=[
         go.Table(
             header=dict(
-                values=["<b>Lomg Name</b>", "<b>Short Name</b>", "<b>Change (24h)</b>"],
+                values=["<b>Long Name</b>", "<b>Short Name</b>", "<b>Change (24h)</b>"],
                 fill_color="lightgrey",
                 align="left"
             ),
@@ -165,7 +168,7 @@ app.layout = html.Div(style={'display': 'flex', 'fontFamily': 'Arial, sans-serif
     html.Div([
         html.H4("Your Stocks"),
         dcc.Graph(figure=owned_stocks_table, style={'height': '100%', 'width': '100%'})
-    ], style={'width': '30%', 'padding': '10px', 'borderRight': '1px solid #ccc', 'display': 'flex',
+    ], style={'width': '35%', 'padding': '10px', 'borderRight': '1px solid #ccc', 'display': 'flex',
               'flexDirection': 'column'}),
 
     # Center Column - Portfolio Performance
@@ -186,7 +189,7 @@ app.layout = html.Div(style={'display': 'flex', 'fontFamily': 'Arial, sans-serif
                 html.Ul([html.Li(f"{l['ticker']} {l['change']}%") for l in losers])
             ], style={'width': '50%'}),
         ], style={'display': 'flex', 'marginTop': '20px'})
-    ], style={'width': '40%', 'padding': '10px'}),
+    ], style={'width': '35%', 'padding': '10px'}),
 
     # Right Column - Market Movers & Search
     html.Div([
