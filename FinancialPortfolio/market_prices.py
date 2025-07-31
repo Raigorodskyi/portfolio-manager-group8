@@ -5,7 +5,8 @@ import plotly.graph_objs as go
 import yfinance as yf
 import pandas as pd
 import datetime
-import numpy as np
+import mysql.connector
+from decimal import Decimal
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 
@@ -15,8 +16,27 @@ owned_stocks = [
     {"ticker": "MSFT", "quantity": 5, "purchased_date": "2025-05-20", "purchased_cost": 120},
     {"ticker": "TSLA", "quantity": 5, "purchased_date": "2025-05-20", "purchased_cost": 100},
     {"ticker": "HST", "quantity": 5, "purchased_date": "2025-05-20", "purchased_cost": 100},
-    {"ticker": "BTC-USD", "quantity": 0.03, "purchased_date": "2025-05-20", "purchased_cost": 8000}
 ]
+
+def fetch_value():
+    connection = mysql.connector.connect(
+        host='localhost',
+        user='root',
+        password='n3u3da!',
+        database='financial_portfolio'
+    )
+    cursor = connection.cursor(dictionary=True)
+
+    query = "SELECT total_value FROM user_portfolio where User_id = 1"
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+    # Convert Decimal to float
+    value = float(result[0]['total_value'])
+
+    return value
 
 def fetch_portfolio_data(owned):
     tickers = [s["ticker"] for s in owned]
@@ -27,6 +47,7 @@ def fetch_portfolio_data(owned):
     gainers = []
     losers = []
     global_value = 0
+    previous_global_value = 0
 
     for stock in owned:
         ticker = stock["ticker"]
@@ -39,6 +60,7 @@ def fetch_portfolio_data(owned):
             change_pct = ((curr_price - prev_price) / prev_price) * 100
             total_value = curr_price * quantity
             global_value += total_value
+            previous_global_value += prev_price * quantity
 
             if total_value - purchased_cost > 0:
                 trend ="▲"
@@ -71,9 +93,14 @@ def fetch_portfolio_data(owned):
     market_movers = gainers + losers
     market_movers.sort(key=lambda x: abs(x["change"]), reverse=True)
 
-    return updated_owned, gainers, losers, market_movers, global_value
+    if global_value - previous_global_value >= 0:
+        daily_profit = html.P("+${}".format(round(global_value - previous_global_value, 4)), className="text-success")
+    else:
+        daily_profit = html.P("-${}".format(round(global_value - previous_global_value, 4)), className="text-error")
 
-updated_owned, gainers, losers, market_movers, global_value = fetch_portfolio_data(owned_stocks)
+    return updated_owned, gainers, losers, market_movers, global_value, daily_profit, previous_global_value
+
+updated_owned, gainers, losers, market_movers, global_value, daily_profit, previous_global_value = fetch_portfolio_data(owned_stocks)
 owned_df = pd.DataFrame(updated_owned)
 
 def get_company_name(ticker):
@@ -89,9 +116,9 @@ owned_df.columns = ["", "Long Name", "Short Name", "Shares Owned", "Date Purchas
 # Color-code values based on trend
 trend_colors = []
 for trend in owned_df[""]:
-    if trend == "▲":
+    if trend == "📈":
         trend_colors.append("green")
-    elif trend == "🔻":
+    elif trend == "📉":
         trend_colors.append("red")
     else:
         trend_colors.append("gray")
@@ -155,7 +182,9 @@ home_layout = dbc.Container(
                         dbc.CardBody([
                             html.H4("Portfolio Value", className="text-info"),
                             html.H2("${}".format(round(global_value, 4)), className="text-white"),
-                            html.P("+$2,845.3 Today", className="text-success"),
+                            html.H3("${}".format(fetch_value()), className="text-white"),
+                            # html.P("${}".format(round(global_value - previous_global_value, 4)), className="text-success"),
+                            daily_profit,
                             html.P("+17.5% Total Return", className="text-primary"),
                             html.P("Active Positions: 5", className="text-warning"),
                         ])
@@ -214,32 +243,33 @@ def global_market_table():
         "VMC", "CHD", "FANG", "NTRS", "WST", "LUV", "ALL", "ED", "YUM", "DRI",
         "EQR", "VRSK", "MLM", "EFX", "HIG", "CNC", "MKC", "TYL", "ZBRA", "MAA",
         "KEYS", "SRE", "BLL", "CTSH", "NTAP", "CMS", "COR", "CNP", "ATO", "NRG",
-        "HOLX", "TRMB", "STE", "BRO", "CEG", "FE", "HBAN", "NI"
+        "HOLX", "TRMB", "STE", "BRO", "CEG", "FE", "HBAN", "NI", "BTC-USD"
     ]
-    # data = []
-    # close = yf.download(global_stocks, period="2d")['Close']
-    #
-    # for ticker in global_stocks:
-    #     try:
-    #         prev_price = close[ticker].iloc[-2]
-    #         curr_price = close[ticker].iloc[-1]
-    #         trend = "📈" if curr_price > prev_price else "📉"
-    #         name = get_company_name(ticker)
-    #         data.append((ticker, name, f"${curr_price:.2f}", trend))
-    #     except:
-    #         continue
-    #
-    # # Build Dash table layout
-    # rows = []
-    # for t, name, price, trend in data:
-    #     rows.append(
-    #         dbc.Row([
-    #             dbc.Col(html.Div(t), width=2),
-    #             dbc.Col(html.Div(name), width=5),
-    #             dbc.Col(html.Div(price), width=3),
-    #             dbc.Col(html.Div(trend), width=2),
-    #         ], className="border-bottom border-secondary py-1")
-    #     )
+    data = yf.download(global_stocks, period="2d", progress=False)
+    close = data["Close"]
+    print(close)
+
+    for ticker in global_stocks:
+        try:
+            prev_price = close[ticker].iloc[-2]
+            curr_price = close[ticker].iloc[-1]
+            trend = "📈" if curr_price > prev_price else "📉"
+            name = get_company_name(ticker)
+            data.append((ticker, name, f"${curr_price:.2f}", trend))
+        except:
+            continue
+
+    # Build Dash table layout
+    rows = []
+    for t, name, price, trend in data:
+        rows.append(
+            dbc.Row([
+                dbc.Col(html.Div(t), width=2),
+                dbc.Col(html.Div(name), width=5),
+                dbc.Col(html.Div(price), width=3),
+                dbc.Col(html.Div(trend), width=2),
+            ], className="border-bottom border-secondary py-1")
+        )
 
     return html.Div([
         html.H3("Top 200 Companies", className="text-light mb-4", style={"color":"white"}),
