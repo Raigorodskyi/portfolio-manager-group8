@@ -28,8 +28,6 @@ def insert_mock_data(connection):
     (50000.00, 'USD');
     """
     
-
-
     # Transactions
     transactions_query = """
     INSERT INTO Transaction (Bank_id, Stock_id, Bond_id, transaction_type, transaction_amount, transaction_date, description)
