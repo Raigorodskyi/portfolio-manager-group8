@@ -1,35 +1,35 @@
-# import yfinance as yf
-#
-# # List of top stock symbols (tickers)
-# top_stocks = {
-#     "Apple": "AAPL",
-#     "Microsoft": "MSFT",
-#     "Tesla": "TSLA",
-#     "Amazon": "AMZN",
-#     "Google": "GOOGL",
-#     "Bitcoin": "BTC-USD",
-#     "NIVIDIA Corporation": "NVDA",
-# }
-#
-# # Fetch stock data
-# def fetch_stock_prices(tickers):
-#     prices = {}
-#     for name, symbol in tickers.items():
-#         stock = yf.Ticker(symbol)
-#         data = stock.history(period="1d")
-#         if not data.empty:
-#             last_price = data['Close'].iloc[-1]
-#             prices[name] = round(last_price, 2)
-#         else:
-#             prices[name] = "N/A"
-#     return prices
-#
-# # Display the prices
-# if __name__ == "__main__":
-#     prices = fetch_stock_prices(top_stocks)
-#     print("Top Stock Prices:")
-#     for name, price in prices.items():
-#         print(f"{name}: ${price}")
+import yfinance as yf
+
+# List of top stock symbols (tickers)
+top_stocks = {
+    "Apple": "AAPL",
+    "Microsoft": "MSFT",
+    "Tesla": "TSLA",
+    "Amazon": "AMZN",
+    "Google": "GOOGL",
+    "Bitcoin": "BTC-USD",
+    "NIVIDIA Corporation": "NVDA",
+}
+
+# Fetch stock data
+def fetch_stock_prices(tickers):
+    prices = {}
+    for name, symbol in tickers.items():
+        stock = yf.Ticker(symbol)
+        data = stock.history(period="1d")
+        if not data.empty:
+            last_price = data['Close'].iloc[-1]
+            prices[name] = round(last_price, 2)
+        else:
+            prices[name] = "N/A"
+    return prices
+
+# Display the prices
+if __name__ == "__main__":
+    prices = fetch_stock_prices(top_stocks)
+    print("Top Stock Prices:")
+    for name, price in prices.items():
+        print(f"{name}: ${price}")
 
 
 import pandas as pd
