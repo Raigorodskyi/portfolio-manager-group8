@@ -1,0 +1,49 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1>Financial Dashboard</h1>
+    <nav>
+      <a routerLink="/overview" routerLinkActive="active">Overview</a>
+      <a routerLink="/global-market" routerLinkActive="active">Global Market</a>
+    </nav>
+  </header>
+
+  <main class="dashboard-main">
+    <div class="portfolio-box">
+      <h2>Portfolio Value</h2>
+      <div class="value">$104,266.00</div>
+      <div class="gain">+ $6,049.25</div>
+      <div class="return">+17.5% Total Return</div>
+    </div>
+
+    <div class="top-performers-box">
+      <h2>Top Performers</h2>
+      <table>
+        <tr><th>Apple</th><td>$9.266</td></tr>
+        <tr><th>MSFT</th><td>$3,571.75</td></tr>
+        <tr><th>TSLA</th><td>$28,383.75</td></tr>
+      </table>
+    </div>
+
+    <div class="your-stocks-box">
+      <h2>Your Stocks</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Long Name</th>
+            <th>Short Name</th>
+            <th>Current Market Price</th>
+            <th>Current Gain</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let stock of stocks">
+            <td>{{ stock.name }}</td>
+            <td>{{ stock.ticker }}</td>
+            <td>{{ stock.price }}</td>
+            <td>{{ stock.gain }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
