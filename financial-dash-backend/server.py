@@ -56,7 +56,7 @@ def get_stock_value():
             }
     return jsonify(stock_values)
     
-@app.route("/user/total_value", methods=["GET"])
+@app.route("/api/total_value", methods=["GET"])
 def get_total_value():
     try:
         conn = get_db_connection()
@@ -110,7 +110,7 @@ def get_all_bonds():
     conn.close()
 
     return jsonify(result)
-@app.route("/user/bank_accounts", methods=["GET"])
+@app.route("/api/bank_accounts", methods=["GET"])
 def get_bank_accounts():
     try:
         conn = get_db_connection()
