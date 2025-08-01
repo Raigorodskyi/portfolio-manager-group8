@@ -56,7 +56,7 @@ def get_stock_value():
             }
     return jsonify(stock_values)
     
-@app.route("/user/total_value", methods=["GET"])
+@app.route("/api/total_value", methods=["GET"])
 def get_total_value():
     try:
         conn = get_db_connection()
@@ -74,43 +74,46 @@ def get_total_value():
 
 @app.route('/api/bonds', methods=['GET'])
 def get_all_bonds():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT bond_name,  bond_ticker , maturity_date, bond_current_price, number_of_bonds
-        FROM Bonds
-    """)
-    bonds = cursor.fetchall()
+        cursor.execute("""
+            SELECT bond_name,bond_ticker , maturity_date, bond_current_price, number_of_bonds
+            FROM Bonds
+        """)
+        bonds = cursor.fetchall()
 
-    result = []
+        result = []
 
-    for bond in bonds:
-        ticker = bond['bond_ticker']
-        if ticker:
-            try:
-                ticker_data = yf.Ticker(ticker)
-                hist = ticker_data.history(period="1d")
-                current_price = hist['Close'][-1] if not hist.empty else None
-            except Exception:
+        for bond in bonds:
+            ticker = bond['bond_ticker']
+            if ticker:
+                try:
+                    ticker_data = yf.Ticker(ticker)
+                    hist = ticker_data.history(period="1d")
+                    current_price = hist['Close'][-1] if not hist.empty else None
+                except Exception:
+                    current_price = None
+            else:
                 current_price = None
-        else:
-            current_price = None
 
-        result.append({
-            "Bond Name": bond['bond_name'],
-            "Maturity Date": str(bond['maturity_date']),
-            "Bond Ticker" : bond['bond_ticker'],
-            "Bond Amount (Purchase Price)": float(bond['bond_current_price']),
-            "Number of Bonds": bond['number_of_bonds'],
-            "Current Market Price": round(float(current_price), 2) if current_price else "Unavailable"
-        })
+            result.append({
+                "Bond Name": bond['bond_name'],
+                "Maturity Date": str(bond['maturity_date']),
+                "Bond Ticker" : bond['bond_ticker'],
+                "Bond Amount (Purchase Price)": float(bond['bond_current_price']),
+                "Number of Bonds": bond['number_of_bonds'],
+                "Current Market Price": round(float(current_price), 2) if current_price else "Unavailable"
+            })
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
+    except mysql.connector.Error as err:
+            return jsonify({"error": str(err)}), 500
 
     return jsonify(result)
-@app.route("/user/bank_accounts", methods=["GET"])
+@app.route("/api/bank_accounts", methods=["GET"])
 def get_bank_accounts():
     try:
         conn = get_db_connection()
