@@ -126,29 +126,31 @@ for stock in stocks_data:
 bonds_data = [
     {
         'transaction_id': transaction_ids[2],  # Savings account transaction
-        'name': 'US Treasury 10-Year',
-        'amount': 10000.00,
+        'name': ' iShares iBoxx $ Investment Grade Corporate Bond ETF',
+        'ticker': 'LQD',
+        'price_per_bond': 1000.00,
         'coupon_rate': 4.25,
         'num_bonds': 10,
-        'maturity_date': date.today() + timedelta(days=3650)  # 10 years
+        'maturity_date': date.today() + timedelta(days=3650)  
     },
     {
         'transaction_id': transaction_ids[3],  # Investment account transaction
-        'name': 'Corporate Bond - Apple Inc',
-        'amount': 5000.00,
+        'name': 'iShares 1-3 Year Treasury Bond ETF',
+        'ticker': 'SHY',
+        'price_per_bond': 1000.00,
         'coupon_rate': 3.85,
         'num_bonds': 5,
-        'maturity_date': date.today() + timedelta(days=1825)  # 5 years
+        'maturity_date': date.today() + timedelta(days=1095)  
     }
 ]
 
 for bond in bonds_data:
     cursor.execute("""
-    INSERT INTO Bonds (bond_name, bond_amount, coupon_rate, number_of_bonds, 
-                      maturity_date, transaction_ID)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    """, (bond['name'], bond['amount'], bond['coupon_rate'],
-          bond['num_bonds'], bond['maturity_date'], bond['transaction_id']))
+    INSERT INTO Bonds (bond_name, bond_current_price, coupon_rate, number_of_bonds, 
+                      maturity_date, transaction_ID, bond_ticker)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """, (bond['name'], bond['price_per_bond'], bond['coupon_rate'],
+          bond['num_bonds'], bond['maturity_date'], bond['transaction_id'], bond['ticker']))
 
 # Commit all changes
 conn.commit()
@@ -169,7 +171,7 @@ print(f"Bond positions: {len(bonds_data)} total")
 
 # Calculate total stock value
 total_stock_value = sum(stock['shares'] * stock['current_price'] for stock in stocks_data)
-total_bond_value = sum(bond['amount'] for bond in bonds_data)
+total_bond_value = sum(bond['price_per_bond'] for bond in bonds_data)
 total_cash = sum(account['balance'] for account in bank_accounts)
 
 print(f"\nPortfolio Breakdown:")

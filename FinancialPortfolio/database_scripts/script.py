@@ -81,9 +81,10 @@ CREATE TABLE IF NOT EXISTS Stocks (
 # Create Bonds table
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS Bonds (
-    bond_id INT PRIMARY KEY AUTO_INCREMENT,
+    bond_ID INT PRIMARY KEY AUTO_INCREMENT,
     bond_name VARCHAR(100),
-    bond_amount DECIMAL(15, 2),
+    bond_ticker VARCHAR (100),
+    bond_current_price DECIMAL(15, 2),
     coupon_rate DECIMAL(5, 2),
     number_of_bonds INT,
     maturity_date DATE,
