@@ -5,28 +5,45 @@
     <nav>
       <a href="#" class="active">Overview</a>
       <a href="#">Global Market</a>
-      <a href="#">Buy</a>
+      <a href="#">Profile</a>
     </nav>
   </div>
 
-  <div class="dashboard-top">
+  <div class="dashboard-grid">
+    <!-- Top Left -->
     <div class="portfolio-box">
-      <h2>Portfolio Value</h2>
-      <div class="value">$50,000</div>
-      <div class="gain">+3.5% Today</div>
-      <div class="return">+12.2% Overall</div>
+      <div class="portfolio-content">
+        <div class="chart-container" *ngIf="isBrowser">
+          <canvas
+            baseChart
+            [data]="pieChartData"
+            [type]="pieChartType"
+          ></canvas>
+        </div>
+      
+        <div class="stats">
+          <div class="value">${{this.globalValue | number:'1.2-2'}}</div>
+          <div class="gain">+3.5% Today</div>
+          <div class="return">+12.2% Overall</div>
+        </div>
+      </div>
+      
     </div>
-  </div>
-  <!-- Bottom Grid: Your Stocks & Top Performers -->
-  <div class="dashboard-bottom">
+
+    <!-- Bottom Left -->
     <div class="your-stocks-box">
       <h2>Your Stocks</h2>
       <table>
         <thead>
           <tr>
-            <th>Ticker</th>
+            <th>Long Name</th>
+            <th>Short Name</th>
+            <th>Current Price</th>
+            <th>Price at Purchase</th>
             <th>Quantity</th>
-            <th>Value</th>
+            <th>Total Value</th>
+            <th>Difference</th>
+            <th>Percentage</th>
           </tr>
         </thead>
         <tbody>
@@ -34,12 +51,18 @@
             <td>{{ stock.name }}</td>
             <td>{{ stock.ticker }}</td>
             <td>{{ stock.price }}</td>
-            <td>{{ stock.gain }}</td>
+            <td>{{ stock.priceAtPurchase }}</td>
+            <td>{{ stock.quantity }}</td>
+            <td>{{ stock.price * stock.quantity }}</td>
+            <td>{{ stock.price * stock.quantity - 
+                            stock.priceAtPurchase * stock.quantity }}</td>
+            <td>{{ stock.price * stock.quantity }}</td>
           </tr>
         </tbody>
       </table>
     </div>
 
+    <!-- Right Side Full Height -->
     <div class="top-performers-box">
       <h2>Top Performers</h2>
       <table>
@@ -47,12 +70,13 @@
           <tr>
             <th>Ticker</th>
             <th>Change</th>
+            <th>Percentage</th>
           </tr>
         </thead>
         <tbody>
-            <tr><th>Apple</th><td>$9.266</td></tr>
-            <tr><th>MSFT</th><td>$3,571.75</td></tr>
-            <tr><th>TSLA</th><td>$28,383.75</td></tr>
+          <tr><th>Apple</th><td>$9.266</td><td>5%</td></tr>
+          <tr><th>MSFT</th><td>$3,571.75</td><td>1.45%</td></tr>
+          <tr><th>TSLA</th><td>$28,383.75</td><td>3.33%</td></tr>
         </tbody>
       </table>
     </div>

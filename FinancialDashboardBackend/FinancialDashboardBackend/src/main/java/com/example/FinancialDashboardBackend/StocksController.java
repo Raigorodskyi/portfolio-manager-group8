@@ -12,7 +12,7 @@ import java.io.InputStreamReader;
 @RestController
 public class StocksController {
 
-    @GetMapping("/api/top-performers")
+    @GetMapping("/api/top-performers") // TODO complete this piece of method
     public ResponseEntity<String> getTopPerformers() throws IOException {
         ProcessBuilder pb = new ProcessBuilder("python3", "top_performers.py");
         pb.directory(new File("/path/to/your/script")); // Replace with the actual path to your script
