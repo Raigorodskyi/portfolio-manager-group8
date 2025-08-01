@@ -78,38 +78,49 @@ stocks_data = [
         'shares': 50,
         'purchase_price': 150.25,
         'current_price': 165.80,
-        'purchase_date': date.today() - timedelta(days=60)
+        'purchase_date': date.today() - timedelta(days=60),
+        'stock_ticker': 'AMZN'
     },
     {
         'transaction_id': transaction_ids[4],  # Second investment transaction
         'shares': 25,
         'purchase_price': 89.50,
         'current_price': 92.75,
-        'purchase_date': date.today() - timedelta(days=35)
+        'purchase_date': date.today() - timedelta(days=35),
+        'stock_ticker': 'COIN'
     },
     {
         'transaction_id': transaction_ids[5],  # Third investment transaction
         'shares': 100,
         'purchase_price': 45.30,
         'current_price': 48.90,
-        'purchase_date': date.today() - timedelta(days=20)
+        'purchase_date': date.today() - timedelta(days=20),
+        'stock_ticker': 'RDDT'
     },
     {
         'transaction_id': transaction_ids[6],  # Fourth investment transaction
         'shares': 30,
         'purchase_price': 220.00,
         'current_price': 215.50,
-        'purchase_date': date.today() - timedelta(days=10)
+        'purchase_date': date.today() - timedelta(days=10),
+        'stock_ticker': 'FLR'
     }
 ]
 
 for stock in stocks_data:
     cursor.execute("""
-    INSERT INTO Stocks (transaction_ID, number_of_shares, purchase_price_per_share, 
-                       current_price_per_share, purchase_date, updated_at_date)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    """, (stock['transaction_id'], stock['shares'], stock['purchase_price'],
-          stock['current_price'], stock['purchase_date'], datetime.now()))
+        INSERT INTO Stocks (transaction_ID, number_of_shares, purchase_price_per_share, 
+                            current_price_per_share, purchase_date, updated_at_date, stock_ticker)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """, (
+        stock['transaction_id'],
+        stock['shares'],
+        stock['purchase_price'],
+        stock['current_price'],
+        stock['purchase_date'],
+        datetime.now(),
+        stock['stock_ticker']
+    ))
 
 # Bonds data
 bonds_data = [
