@@ -14,7 +14,7 @@ def get_db_connection():
     )
 
 @app.route('/api/stock_values', methods=['GET'])
-def get_stock_value(user_id):
+def get_stock_value():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -23,7 +23,7 @@ def get_stock_value(user_id):
         SELECT stock_ticker, number_of_shares
         FROM Stocks;
     """
-    cursor.execute(query, (user_id,))
+    cursor.execute(query)
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -32,7 +32,7 @@ def get_stock_value(user_id):
     stock_values = {}
     for row in rows:
         ticker = row['stock_ticker']
-        shares = row['Number_of_shares']
+        shares = row['number_of_shares']
         try:
             stock = yf.Ticker(ticker)
             current_price = stock.info['regularMarketPrice']
@@ -43,19 +43,19 @@ def get_stock_value(user_id):
     return jsonify(stock_values)
     
 @app.route("/user/total_value", methods=["GET"])
-def get_total_value(user_id):
+def get_total_value():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT total_value FROM User_portfolio WHERE user_ID = %s", (user_id,))
+        cursor.execute("SELECT user_ID, total_value FROM User_portfolio")
         result = cursor.fetchone()
 
         cursor.close()
         conn.close()
 
         if result:
-            return jsonify({"user_id": user_id, "total_value": float(result[0])})
+            return jsonify({"user_id": int(result[0]), "total_value": float(result[1])})
         else:
             return jsonify({"error": "User not found"}), 404
 
