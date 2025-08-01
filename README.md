@@ -5,6 +5,8 @@ Group members: Mahrukh, Igor and Akhil
 
 !!!!
 
-To be able to run the code, please run:
-
-pip install dash yfinance pandas plotly
+To be able to run the UI
+*make sure to be in financial-dash folder*
+then, please run:
+- npm install
+- npm run start
