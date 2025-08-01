@@ -10,3 +10,7 @@ To be able to run the UI
 then, please run:
 - npm install
 - npm run start
+
+Flask API endpoints:
+- /api/stock_values : Gives you a dictionary with <key:value> as <stock_ticker:stock_current_price>
+- /user/total_value : Gives you the total value in user_portfolio.total_value   
