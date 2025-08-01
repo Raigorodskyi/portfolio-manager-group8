@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS Stocks (
     purchase_price_per_share DECIMAL(10, 2),
     current_price_per_share DECIMAL(10, 2),
     purchase_date DATE,
+    stock_ticker VARCHAR(255),
     FOREIGN KEY (transaction_ID) REFERENCES Transaction(transaction_ID)
 );
 """)
