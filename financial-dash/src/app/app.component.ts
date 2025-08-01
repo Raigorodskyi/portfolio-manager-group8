@@ -4,7 +4,7 @@ import { OverviewComponent } from './overview/overview.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, OverviewComponent],
+  imports: [ OverviewComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

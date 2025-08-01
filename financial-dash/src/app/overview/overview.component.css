@@ -1,4 +1,4 @@
-body {
+/*body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f3f6fd;
@@ -108,5 +108,124 @@ body {
   
   tr:nth-child(even) {
     background-color: #f4f6fa;
-  }
+  }*/ 
+
+  /* Overall Page Background */
+body, .dashboard-container {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #2a004c, #41007e);
+  color: white;
+  min-height: 100vh;
+}
+
+/* Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.dashboard-header nav a {
+  color: white;
+  margin-left: 1rem;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+.dashboard-header nav a:hover,
+.dashboard-header nav .active {
+  background: #ffffff22;
+}
+
+.dashboard-top {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.dashboard-bottom {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+/* Card Styles */
+.portfolio-box,
+.top-performers-box,
+.your-stocks-box {
+  background: linear-gradient(to bottom right, #7e07fd, #8e24aa);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.portfolio-box {
+  background: linear-gradient(to right, #2400ff, #7900ff);
+}
+
+.top-performers-box {
+  background: linear-gradient(to right, #d4c4f8, #b48ef5);
+  color: #222;
+}
+
+.your-stocks-box {
+  background: linear-gradient(to right, #ed5bd2, #f44776);
+}
+
+/* Headings */
+h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+/* Value Text */
+.value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.gain,
+.return {
+  font-size: 1.2rem;
+  margin-top: 0.25rem;
+  color: #9cffac;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+th, td {
+  padding: 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+th {
+  font-weight: bold;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
   
