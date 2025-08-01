@@ -1,7 +1,8 @@
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { NgChartsModule } from 'ng2-charts';
+import { BaseChartDirective, NgChartsModule } from 'ng2-charts';
 import { ChartData, ChartType } from 'chart.js';
+import { PortfolioService } from '../services/portfolio.service';
 
 @Component({
   selector: 'app-overview',
@@ -10,19 +11,21 @@ import { ChartData, ChartType } from 'chart.js';
   styleUrl: './overview.component.css'
 })
 export class OverviewComponent implements OnInit {
+  @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
+
 
   isBrowser: boolean = false;
   globalValue = 0;
+  cash = 0;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioService: PortfolioService) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
-  cash = 4500; 
 
   bonds = [
-    { name: 'Bond1', ticker: 'AAAA', price: 200, gain: '+2%', quantity: 4 },
-    { name: 'Bond2', ticker: 'BBBB', price: 700, gain: '-1.5%', quantity: 3 }
+    { name: 'Bond1', price: 200, gain: '+2%', quantity: 4 },
+    { name: 'Bond2', price: 700, gain: '-1.5%', quantity: 3 }
   ]
 
   stocks = [
@@ -46,19 +49,27 @@ getTotalValue(items: { price: number; quantity: number }[]): number {
   return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 }
 
-  ngOnInit() {
-    const bondsTotal = this.getTotalValue(this.bonds);
-    const stocksTotal = this.getTotalValue(this.stocks);
-    this.globalValue = stocksTotal + bondsTotal + this.cash;
-  
+ngOnInit(): void {
+  const bondsTotal = this.getTotalValue(this.bonds);
+  const stocksTotal = this.getTotalValue(this.stocks);
+
+  this.portfolioService.getTotalValue().subscribe((data) => {
+    this.cash = data.total_value;
+
+    this.globalValue = data.total_value + bondsTotal + stocksTotal;
+
     this.pieChartData = {
       labels: ['Cash', 'Bonds', 'Stocks'],
       datasets: [
         {
-          data: [this.cash, bondsTotal, stocksTotal],
+          data: [data.total_value, bondsTotal, stocksTotal],
           backgroundColor: ['#fcd34d', '#60a5fa', '#8b5cf6']
         }
       ]
     };
-  }
+
+    console.log(this.cash, bondsTotal, stocksTotal)
+    this.chart?.update();
+  });
+}
 }
