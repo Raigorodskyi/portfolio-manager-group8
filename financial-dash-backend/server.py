@@ -20,7 +20,7 @@ def get_stock_value():
 
     # Fetch stock ticker and number of shares for the given user
     query = """
-        SELECT stock_ticker, number_of_shares
+        SELECT stock_ticker, number_of_shares, purchase_price_per_share
         FROM Stocks;
     """
     cursor.execute(query)
@@ -28,17 +28,37 @@ def get_stock_value():
     cursor.close()
     conn.close()
 
-    # Fetch current prices and compute net values
+    # Fetch the current price and stock name
     stock_values = {}
     for row in rows:
         ticker = row['stock_ticker']
         shares = row['number_of_shares']
+        purchase_price = row['purchase_price_per_share']
+        
         try:
             stock = yf.Ticker(ticker)
             current_price = stock.info['regularMarketPrice']
-            stock_values[ticker] = round(current_price * shares, 2)
+            stock_name = stock.info.get('shortName')
+
+            if current_price is not None and stock_name is not None:
+                stock_values[ticker] = {
+                    'stock_name': stock_name,
+                    'purchase_price': float(purchase_price),
+                    'shares': shares,
+                    'current_price': float(current_price)
+                }
+            else:
+                stock_values[ticker] = {
+                    'error': 'Price or name not available',
+                    'purchase_price': float(purchase_price),
+                    'shares': shares
+                }
         except Exception as e:
-            stock_values[ticker] = f"Error fetching price: {str(e)}"
+            stock_values[ticker] = {
+                'error': str(e),
+                'purchase_price': float(purchase_price),
+                'shares': shares
+            }
 
     return jsonify(stock_values)
     
