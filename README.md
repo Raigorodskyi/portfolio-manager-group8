@@ -12,10 +12,10 @@ then, please run:
 - npm run start
 
 Flask API endpoints:
-- GET /api/stock_values: Gives back a json where the key is stock tickers and the values are as shown below
-    stock_name: the full name of the company
-    purchase_price: the original purchase price per share
-    shares: the number of shares owned
-    current_price: the most recent market price from Yahoo Finance
+- GET /api/stock_values: Gives back a json where the key is stock tickers and the values are as shown below<br>
+    stock_name: the full name of the company<br>
+    purchase_price: the original purchase price per share<br>
+    shares: the number of shares owned<br>
+    current_price: the most recent market price from Yahoo Finance<br>
   
 - /user/total_value : Gives you the total value in user_portfolio.total_value   
