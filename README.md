@@ -10,9 +10,10 @@ To be able to run the UI
 then, please run:
 - npm install
 - npm run start
--ng serve
+- ng serve
+
 Flask API endpoints:
-- /api/stock_values : Gives you a dictionary with <key:value> as <stock_ticker:stock_current_price>
+- /api/stock_values : Gives you the stocks the user owns
 - /api/total_value : Gives you the total value in user_portfolio.total_value   
 - /api/bank_accounts: Gives you the bank account information of user
 - /api/bonds: Gives you the bonds of the user
