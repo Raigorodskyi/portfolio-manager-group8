@@ -1,14 +1,32 @@
 import mysql.connector
 
-# Connect to MySQL
+# First, connect WITHOUT specifying a database to create it
 conn = mysql.connector.connect(
-    host="localhost",       
-    user="root",   
-    password="n3u3da!",  
-    database="finance_portfolio"
+    host="localhost",
+    user="root",
+    password="n3u3da!"
+    # No database parameter here initially
 )
 
 cursor = conn.cursor()
+
+# Create the database
+cursor.execute("CREATE DATABASE IF NOT EXISTS finance_portfolio;")
+
+# Now switch to using the database
+cursor.execute("USE finance_portfolio;")
+
+# Alternatively, you can close and reconnect with the database specified:
+# cursor.close()
+# conn.close()
+#
+# conn = mysql.connector.connect(
+#     host="localhost",
+#     user="root",
+#     password="n3u3da!",
+#     database="finance_portfolio"
+# )
+# cursor = conn.cursor()
 
 # Create User_portfolio table
 cursor.execute("""
@@ -31,7 +49,7 @@ CREATE TABLE IF NOT EXISTS Bank_Account (
     bank_account_last_updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     current_balance DECIMAL(15, 2),
     user_ID INT,
-    FOREIGN KEY (user_ID) REFERENCES user_portfolio(user_ID)
+    FOREIGN KEY (user_ID) REFERENCES User_portfolio(user_ID)
 );
 """)
 
@@ -76,3 +94,5 @@ CREATE TABLE IF NOT EXISTS Bonds (
 conn.commit()
 cursor.close()
 conn.close()
+
+print("Database and tables created successfully!")
