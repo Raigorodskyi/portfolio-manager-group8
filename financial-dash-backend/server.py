@@ -281,15 +281,19 @@ def buy_bond():
     data = request.get_json()
     bond_ticker = data.get('bond_ticker')
     bond_name = data.get('bond_name')
-    bond_current_price = data.get('bond_current_price')
     coupon_rate = data.get('coupon_rate')
     number_of_bonds = data.get('number_of_bonds')
     maturity_date = data.get('maturity_date')
     bank_ID = data.get('bank_ID')
     user_ID = data.get('user_ID')
-    if not all([bond_ticker, bond_name, bond_current_price, coupon_rate, number_of_bonds, maturity_date, bank_ID, user_ID]):
+    if not all([bond_ticker, bond_name, coupon_rate, number_of_bonds, maturity_date, bank_ID, user_ID]):
         return jsonify({"error": "Missing fields"}), 400
-
+    try:
+            bond_info = yf.Ticker(bond_ticker)
+            bond_current_price = bond_info.history(period="1d")['Close'].iloc[-1]
+    except Exception as e:
+            return jsonify({"error": f"Failed to fetch bond price: {str(e)}"}), 500
+    total_cost = bond_current_price * number_of_bonds
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -322,7 +326,6 @@ def buy_bond():
                 INSERT INTO Bonds (bond_name, bond_ticker, bond_current_price, coupon_rate, number_of_bonds, maturity_date, transaction_ID)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (bond_name, bond_ticker, bond_current_price, coupon_rate, number_of_bonds, maturity_date, transaction_ID))
-        total_cost = bond_current_price * number_of_bonds
         cursor.execute("SELECT total_value FROM User_portfolio WHERE user_ID = %s", (user_ID,))
         user_portfolio = cursor.fetchone()
 
@@ -369,13 +372,18 @@ def buy_stock():
     data = request.get_json()
     stock_ticker = data.get('stock_ticker')
     number_of_shares = data.get('number_of_shares')
-    purchase_price_per_share = data.get('purchase_price_per_share')
-    current_price_per_share = data.get('current_price_per_share')
     purchase_date = data.get('purchase_date')
     bank_ID = data.get('bank_ID')
     user_ID = data.get('user_ID')
-    if not all([stock_ticker, number_of_shares, purchase_price_per_share, current_price_per_share, purchase_date, bank_ID, user_ID]):
+    if not all([stock_ticker, number_of_shares, purchase_date, bank_ID, user_ID]):
         return jsonify({'error': 'Missing required fields'}), 400
+    try:
+        ticker = yf.Ticker(stock_ticker)
+        stock_current_price = ticker.history(period="1d")['Close'].iloc[-1]
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch stock price: {str(e)}"}), 500
+
+    total_cost = stock_current_price * number_of_shares
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -392,8 +400,8 @@ def buy_stock():
         existing_stock = cursor.fetchone()
 
         if existing_stock:
-            new_total = existing_stock['number_of_shares'] + number_of_shares
-            total_cost = (existing_stock['purchase_price_per_share'] * existing_stock['number_of_shares']) + (purchase_price_per_share * number_of_shares)
+            new_total = (existing_stock['number_of_shares'] + number_of_shares) 
+            total_cost = stock_current_price *  (existing_stock['number_of_shares'] + number_of_shares) 
             avg_price = total_cost / new_total
             cursor.execute("""
                 UPDATE Stocks
@@ -402,7 +410,7 @@ def buy_stock():
                     current_price_per_share = %s,
                     updated_at_date = %s
                 WHERE stock_ticker = %s
-            """, (new_total, round(avg_price, 2), current_price_per_share, now, stock_ticker))
+            """, (new_total, round(avg_price, 2), stock_current_price , now, stock_ticker))
         else:
         
             cursor.execute("""
@@ -417,13 +425,13 @@ def buy_stock():
             """, (
                 transaction_ID,
                 number_of_shares,
-                purchase_price_per_share,
-                current_price_per_share,
+                stock_current_price ,
+                stock_current_price ,
                 purchase_date,
                 stock_ticker
             ))
 
-        total_cost = purchase_price_per_share * number_of_shares
+        
         cursor.execute("SELECT total_value FROM User_portfolio WHERE user_ID = %s", (user_ID,))
         user_portfolio = cursor.fetchone()
 
