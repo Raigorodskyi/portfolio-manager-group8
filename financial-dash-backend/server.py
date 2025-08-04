@@ -393,6 +393,7 @@ def buy_stock():
         """, (bank_ID, now))
         transaction_ID = cursor.lastrowid
        
+       
         cursor.execute("""
                 INSERT INTO Stocks (
                     transaction_ID,
@@ -420,19 +421,31 @@ def buy_stock():
 
         new_total_value = float(user_portfolio['total_value']) - float(total_cost)
 
+        
+        cursor.execute("SELECT current_balance FROM Bank_Account WHERE bank_ID = %s", (bank_ID,))
+        bank_account = cursor.fetchone()
+        if not bank_account:
+            return jsonify({"error": "Bank account not found"}), 404
+        new_bank_balance = float(bank_account['current_balance']) - total_cost
+        
+        if new_bank_balance < 0:
+            cursor.execute("""
+                SELECT bank_account_name
+                FROM Bank_Account
+                WHERE bank_id = %s
+            """, (bank_ID,))
+            error_bank_name = cursor.fetchone()
+            
+            return jsonify({
+                "error": f"Not enough cash in {error_bank_name['bank_account_name']}"
+            }), 404
+
         cursor.execute("""
             UPDATE User_portfolio
             SET total_value = %s,
                 updated_at = %s
         """, (new_total_value, now))
-        cursor.execute("SELECT current_balance FROM Bank_Account WHERE bank_ID = %s", (bank_ID,))
-        bank_account = cursor.fetchone()
-
-        if not bank_account:
-            return jsonify({"error": "Bank account not found"}), 404
-
-        new_bank_balance = float(bank_account['current_balance']) - total_cost
-
+        
         cursor.execute("""
             UPDATE Bank_Account
             SET current_balance = %s,
