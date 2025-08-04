@@ -155,7 +155,7 @@ def get_bank_accounts():
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
     
-# API that verifies whether a stock ticker exists through yfinance
+# API that verifies and fetches data for a specific stock ticker through yfinance
 @app.route("/api/stock_value_from_ticker/<string:ticker>", methods=["GET"])
 def get_stock_value_from_ticker(ticker):
     ticker = ticker.upper()
@@ -275,11 +275,10 @@ def sell_stock():
         cursor.close()
         conn.close()
 
-
+# API route for user to buy bonds
 @app.route('/api/buy_bond', methods=['POST'])
 def buy_bond():
     data = request.get_json()
-
     bond_ticker = data.get('bond_ticker')
     bond_name = data.get('bond_name')
     bond_current_price = data.get('bond_current_price')
@@ -294,8 +293,7 @@ def buy_bond():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    try:
-       
+    try:       
         now = datetime.now()
         cursor.execute("""
             INSERT INTO Transaction (bank_ID, date)
@@ -365,6 +363,7 @@ def buy_bond():
         cursor.close()
         conn.close()
 
+# API route for user to buy bonds
 @app.route('/api/buy_stock', methods=['POST'])
 def buy_stock():
     data = request.get_json()
