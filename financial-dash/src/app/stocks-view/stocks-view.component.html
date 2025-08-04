@@ -9,10 +9,10 @@
     </div>
     <div class="portfolio-values">
       <div class="value-box">
-        <h3>Portfolio Value:</h3>
+        <h3>Portfolio Value: {{this.globalValue}} </h3>
       </div>
       <div class="value-box">
-        <h3>Net Stock Valuation:</h3>
+        <h3>Net Stock Valuation: ${{this.stocksValuation}}</h3>
       </div>
     </div>
   </div>
@@ -38,6 +38,32 @@
               <td>{{ stock.data.stock_name }}</td>
               <td>{{ stock.data.shares }}</td>
               <td>{{ stock.data.purchase_price | currency }}</td>
+              <td>{{ stock.data.current_price | currency }}</td>
+              <td>{{ getGainLoss(stock.data) | currency }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="other-stocks-box">
+        <h2>View Other Stocks</h2>
+        <div class="stock-search">
+          <input type="text" placeholder="Search by ticker or name" />
+          <button>Search</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Name</th>
+              <th>Current Price</th>
+              <th>Difference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let stock of stockList">
+              <td>{{ stock.ticker }}</td>
+              <td>{{ stock.data.stock_name }}</td>
               <td>{{ stock.data.current_price | currency }}</td>
               <td>{{ getGainLoss(stock.data) | currency }}</td>
             </tr>

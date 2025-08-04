@@ -52,11 +52,42 @@ body, .dashboard-container {
   }
   
   /* Grid area assignments */
-  .portfolio-box {
+  .your-stocks-box {
     grid-area: portfolio;
-    background: linear-gradient(to right, #2400ff, #7900ff);
+    background: linear-gradient(to right, #2e19b4, #4c0e92);
+    height: 200%;
   }
   
+  .stock-search {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 10px;
+  }
+  
+  .stock-search input {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    width: 60%;
+    font-size: 1rem;
+  }
+  
+  .stock-search button {
+    padding: 8px 16px;
+    background-color: #5e2ca5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .stock-search button:hover {
+    background-color: #7e4bc3;
+  }  
+
   .portfolio-content {
     display: flex;
     align-items: center;
@@ -70,27 +101,16 @@ body, .dashboard-container {
     min-width: 200px;
   }
   
-  .top-performers-box {
+  .other-stocks-box {
     grid-area: top;
     background: linear-gradient(to right, #d4c4f8, #b48ef5);
     color: #222;
-  }
-  
-  .your-stocks-box {
-    grid-area: stocks;
-    background: linear-gradient(to right, #ed5bd2, #f44776);
-  }
-  
-  .your-bonds-box {
-    grid-area: bonds;
-    background: linear-gradient(to right, #853acc, #6807e6);
+    height: 200%;
   }
   
   /* Card base styles */
-  .portfolio-box,
-  .top-performers-box,
   .your-stocks-box,
-  .your-bonds-box {
+  .other-stocks-box {
     border-radius: 20px;
     padding: 1.5rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
@@ -284,12 +304,11 @@ body, .dashboard-container {
   /* Responsive fallback */
   @media (max-width: 768px) {
     .dashboard-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr;
       grid-template-areas:
-        "portfolio"
-        "top"
-        "stocks"
-        "bonds";
+        "portfolio top"
+        "stocks stocks"
+        "bonds bonds";
     }
   }
   
