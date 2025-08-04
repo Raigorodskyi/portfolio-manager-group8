@@ -6,6 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+# Connect to database
 def get_db_connection():
     return mysql.connector.connect(
         host="localhost",
@@ -14,6 +15,7 @@ def get_db_connection():
         database="finance_portfolio"
     )
 
+# API route that fetches all the user's owned stocks and stock related data
 @app.route('/api/stock_values', methods=['GET'])
 def get_stock_value():
     conn = get_db_connection()
@@ -57,7 +59,8 @@ def get_stock_value():
                 'shares': shares
             }
     return jsonify(stock_values)
-    
+
+# API route that fetches the total amount of cash the user has deposited on our platform for buying/selling stocks
 @app.route("/api/total_value", methods=["GET"])
 def get_total_value():
     try:
@@ -74,6 +77,7 @@ def get_total_value():
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
 
+# API route that fetches all the user's owned bonds and bond related data
 @app.route('/api/bonds', methods=['GET'])
 def get_all_bonds():
     try:
@@ -115,6 +119,8 @@ def get_all_bonds():
             return jsonify({"error": str(err)}), 500
 
     return jsonify(result)
+
+# API route that fetches all the user's bank accounts and related data
 @app.route("/api/bank_accounts", methods=["GET"])
 def get_bank_accounts():
     try:
