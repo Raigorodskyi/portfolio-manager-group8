@@ -2,17 +2,22 @@ from flask import Flask, jsonify
 import mysql.connector
 import yfinance as yf
 from flask_cors import CORS
+from dotenv import load_dotenv
+import os
 
+
+load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
 def get_db_connection():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="n3u3da!",
-        database="finance_portfolio"
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"), # Use your actual password here
+        database=os.getenv("DB_NAME")
     )
+
 
 @app.route('/api/stock_values', methods=['GET'])
 def get_stock_value():
