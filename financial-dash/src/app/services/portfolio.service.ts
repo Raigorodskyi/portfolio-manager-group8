@@ -1,16 +1,29 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { Bond } from '../bond';
+import { Stock } from '../stock';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PortfolioService {
-  private apiUrl = 'http://127.0.0.1:5000/api/total_value';
+  private cashValueUrl = 'http://127.0.0.1:5000/api/total_value';
+  private stocksUrl = 'http://127.0.0.1:5000/api/stock_values';
+  private bondsUrl = 'http://127.0.0.1:5000/api/bonds';
 
   constructor(private http: HttpClient) {}
 
-  getTotalValue(): Observable<{ total_value: number; user_id: number }> {
-    return this.http.get<{ total_value: number; user_id: number }>(this.apiUrl);
+  getCashValue(): Observable<{ total_value: number; user_id: number }> {
+    return this.http.get<{ total_value: number; user_id: number }>(this.cashValueUrl);
+  }
+
+  getBonds(): Observable<Bond[]> {
+    return this.http.get<Bond[]>(this.bondsUrl);
+  }
+  
+
+  getStocks(): Observable<{ [ticker: string]: Stock }> {
+    return this.http.get<{ [ticker: string]: Stock }>(this.stocksUrl);
   }
 }

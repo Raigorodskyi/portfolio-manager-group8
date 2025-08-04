@@ -139,6 +139,56 @@ th {
 }
 
 
+.section-box {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.view-button {
+  background-color: #461c6d; 
+  color: white;
+  width: 100px;
+  height: 30px;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.your-stocks-box,
+.your-bonds-box {
+  position: relative; /* Needed for absolute positioning inside */
+}
+
+.your-stocks-box .view-button,
+.your-bonds-box .view-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+}
+
+.your-bonds-box h3 {
+  margin-top: 0;
+}
+.your-stocks-box h3 {
+  margin-top: 0;
+}
+.view-button:hover {
+  background-color: #991d8f; /* Tailwind blue-600 */
+}
 
 tr:last-child td {
   border-bottom: none;

@@ -4,7 +4,6 @@
     <h1>My Portfolio</h1>
     <nav>
       <a href="#" class="active">Overview</a>
-      <a href="#">Global Market</a>
       <a href="#">Profile</a>
     </nav>
   </div>
@@ -32,31 +31,27 @@
 
     <!-- Bottom Left -->
     <div class="your-stocks-box">
+      <button class="view-button" [routerLink]="['/stocks']">View</button>
       <h2>Your Stocks</h2>
       <table>
         <thead>
           <tr>
-            <th>Long Name</th>
-            <th>Short Name</th>
+            <th>Ticker</th>
+            <th>Name</th>
+            <th>Shares</th>
+            <th>Purchase Price</th>
             <th>Current Price</th>
-            <th>Price at Purchase</th>
-            <th>Quantity</th>
-            <th>Total Value</th>
             <th>Difference</th>
-            <th>Percentage</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let stock of stocks">
-            <td>{{ stock.name }}</td>
+          <tr *ngFor="let stock of stockList">
             <td>{{ stock.ticker }}</td>
-            <td>{{ stock.price }}</td>
-            <td>{{ stock.priceAtPurchase }}</td>
-            <td>{{ stock.quantity }}</td>
-            <td>{{ stock.price * stock.quantity }}</td>
-            <td>{{ stock.price * stock.quantity - 
-                            stock.priceAtPurchase * stock.quantity }}</td>
-            <td>{{ stock.price * stock.quantity }}</td>
+            <td>{{ stock.data.stock_name }}</td>
+            <td>{{ stock.data.shares }}</td>
+            <td>{{ stock.data.purchase_price | currency }}</td>
+            <td>{{ stock.data.current_price | currency }}</td>
+            <td>{{ getGainLoss(stock.data) | currency }}</td>
           </tr>
         </tbody>
       </table>
@@ -82,25 +77,26 @@
     </div>
     <div class="your-bonds-box">
       <h2>Your Bonds</h2>
+      <button class="view-button">View</button>
       <table>
         <thead>
           <tr>
             <th>Bond Name</th>
-            <th>Bond Amount</th>
-            <th>Price at Purchase</th>
-            <th>Quantity</th>
+            <th>Purchase Cost</th>
+            <th>Bond Ticker</th>
+            <th>Current Market Price</th>
             <th>Maturity Date</th>
-            <th>Coupon Rate</th>
+            <th>Number of Bonds</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let bond of bonds">
-            <td>{{ bond.name }}</td>
-            <td>{{ bond.price }}</td>
-            <td>{{ bond.price }}</td>
-            <td>{{ bond.quantity }}</td>
-            <td>{{ bond.matDate }}</td>
-            <td>{{ bond.rate }}</td>
+            <td>{{ bond['Bond Name'] }}</td>
+            <td>{{ bond['Bond Amount (Purchase Price)'] }}</td>
+            <td>{{ bond['Bond Ticker'] }}</td>
+            <td>{{ bond['Current Market Price'] }}</td>
+            <td>{{ bond['Maturity Date'] }}</td>
+            <td>{{ bond['Number of Bonds'] }}</td>
           </tr>
         </tbody>
       </table>

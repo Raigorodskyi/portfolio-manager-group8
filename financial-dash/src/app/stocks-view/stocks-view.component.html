@@ -1,0 +1,49 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="header-top">
+      <h1>My Portfolio</h1>
+      <nav>
+        <a href="#" class="active">Overview</a>
+        <a href="#">Profile</a>
+      </nav>
+    </div>
+    <div class="portfolio-values">
+      <div class="value-box">
+        <h3>Portfolio Value:</h3>
+      </div>
+      <div class="value-box">
+        <h3>Net Stock Valuation:</h3>
+      </div>
+    </div>
+  </div>
+  
+  
+    <div class="dashboard-grid">
+      <div class="your-stocks-box">
+        <h2>Your Stocks</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Name</th>
+              <th>Shares</th>
+              <th>Purchase Price</th>
+              <th>Current Price</th>
+              <th>Difference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let stock of stockList">
+              <td>{{ stock.ticker }}</td>
+              <td>{{ stock.data.stock_name }}</td>
+              <td>{{ stock.data.shares }}</td>
+              <td>{{ stock.data.purchase_price | currency }}</td>
+              <td>{{ stock.data.current_price | currency }}</td>
+              <td>{{ getGainLoss(stock.data) | currency }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
