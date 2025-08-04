@@ -24,8 +24,8 @@ export class OverviewComponent implements OnInit {
 
 
   bonds = [
-    { name: 'Bond1', price: 200, gain: '+2%', quantity: 4 },
-    { name: 'Bond2', price: 700, gain: '-1.5%', quantity: 3 }
+    { name: 'Bond1', price: 200, rate: '+2%', quantity: 4, matDate: '2025-09-09' },
+    { name: 'Bond2', price: 700, rate: '-1.5%', quantity: 3, matDate: '2025-09-09' }
   ]
 
   stocks = [
