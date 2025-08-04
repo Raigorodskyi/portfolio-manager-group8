@@ -1,11 +1,34 @@
-import { Component } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Bond } from '../bond';
+import { PortfolioService } from '../services/portfolio.service';
+import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-bonds-view',
-  imports: [],
+  imports: [CommonModule, CurrencyPipe],
   templateUrl: './bonds-view.component.html',
   styleUrl: './bonds-view.component.css'
 })
-export class BondsViewComponent {
+export class BondsViewComponent implements OnInit {
+bonds: Bond[] = [];
+isBrowser: boolean = false;
+bondValuation: number = 0;
+globalValue: number = 0;
+
+constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioService: PortfolioService) {
+  this.isBrowser = isPlatformBrowser(platformId);
+}
+
+
+ngOnInit(): void {
+    this.globalValue = Number(localStorage.getItem('globalValue'));
+
+    this.portfolioService.getBonds().subscribe((bondsData) => {
+      this.bonds = bondsData;
+
+      this.bondValuation = this.bonds.reduce((sum, bond) =>
+        sum + bond['Current Market Price'] * bond['Number of Bonds'], 0);
+    });
+}
 
 }

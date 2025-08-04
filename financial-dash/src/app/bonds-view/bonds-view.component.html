@@ -1,1 +1,72 @@
-<p>bonds-view works!</p>
+<div class="dashboard-container">
+    <div class="dashboard-header">
+      <div class="header-top">
+        <h1>My Portfolio</h1>
+        <nav>
+          <a href="#" class="active">Overview</a>
+          <a href="#">Profile</a>
+        </nav>
+      </div>
+      <div class="portfolio-values">
+        <div class="value-box">
+          <h3>Portfolio Value: {{this.globalValue}} </h3>
+        </div>
+        <div class="value-box">
+          <h3>Net Bonds Valuation: ${{this.bondValuation}}</h3>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="dashboard-grid">
+        <div class="your-bonds-box">
+            <h2>Your Bonds</h2>            <table>
+              <thead>
+                <tr>
+                  <th>Bond Name</th>
+                  <th>Purchase Cost</th>
+                  <th>Bond Ticker</th>
+                  <th>Current Market Price</th>
+                  <th>Maturity Date</th>
+                  <th>Number of Bonds</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let bond of bonds">
+                  <td>{{ bond['Bond Name'] }}</td>
+                  <td>{{ bond['Bond Amount (Purchase Price)'] | currency }}</td>
+                  <td>{{ bond['Bond Ticker'] }}</td>
+                  <td>{{ bond['Current Market Price'] | currency }}</td>
+                  <td>{{ bond['Maturity Date'] }}</td>
+                  <td>{{ bond['Number of Bonds'] }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+  
+        <div class="other-bonds-box">
+          <h2>View Other Bonds</h2>
+          <div class="bond-search">
+            <input type="text" placeholder="Search by ticker or name" />
+            <button>Search</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Name</th>
+                <th>Current Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let bond of bonds">
+                <td>{{ bond['Bond Ticker'] }}</td>
+                <td>{{ bond['Bond Name'] }}</td>
+                <td>{{ bond['Current Market Price'] | currency }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
