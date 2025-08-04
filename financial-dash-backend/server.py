@@ -279,15 +279,13 @@ def sell_stock():
 @app.route('/api/buy_bond', methods=['POST'])
 def buy_bond():
     data = request.get_json()
-
     bond_ticker = data.get('bond_ticker')
-    bond_name = data.get('bond_name')
-    coupon_rate = data.get('coupon_rate')
     number_of_bonds = data.get('number_of_bonds')
-    maturity_date = data.get('maturity_date')
     bank_ID = data.get('bank_ID')
-    user_ID = data.get('user_ID')
-    if not all([bond_ticker, bond_name, coupon_rate, number_of_bonds, maturity_date, bank_ID, user_ID]):
+    ticker=yf.Ticker(bond_ticker)
+    bond_name = ticker.info.get('shortName', 'N/A')
+   
+    if not all([bond_ticker, number_of_bonds,  bank_ID]):
         return jsonify({"error": "Missing fields"}), 400
     try:
             bond_info = yf.Ticker(bond_ticker)
@@ -310,10 +308,10 @@ def buy_bond():
     
         cursor.execute("SELECT * FROM Bonds WHERE bond_ticker = %s", (bond_ticker,))
         existing_bond = cursor.fetchone()
-
+        
         if existing_bond:
             new_total = existing_bond['number_of_bonds'] + number_of_bonds
-
+         
             cursor.execute("""
                 UPDATE Bonds
                 SET number_of_bonds = %s,
@@ -340,8 +338,8 @@ def buy_bond():
             UPDATE User_portfolio
             SET total_value = %s,
                 updated_at = %s
-            WHERE user_ID = %s
-        """, (new_value, now, user_ID))
+         
+        """, (new_value, now))
         cursor.execute("SELECT current_balance FROM Bank_Account WHERE bank_ID = %s", (bank_ID,))
         bank_account = cursor.fetchone()
 
@@ -373,10 +371,8 @@ def buy_stock():
     data = request.get_json()
     stock_ticker = data.get('stock_ticker')
     number_of_shares = data.get('number_of_shares')
-    purchase_date = data.get('purchase_date')
     bank_ID = data.get('bank_ID')
-    user_ID = data.get('user_ID')
-    if not all([stock_ticker, number_of_shares, purchase_date, bank_ID, user_ID]):
+    if not all([stock_ticker, number_of_shares,  bank_ID]):
         return jsonify({'error': 'Missing required fields'}), 400
     try:
         ticker = yf.Ticker(stock_ticker)
@@ -428,12 +424,12 @@ def buy_stock():
                 number_of_shares,
                 stock_current_price ,
                 stock_current_price ,
-                purchase_date,
+                datetime.now(),
                 stock_ticker
             ))
 
         
-        cursor.execute("SELECT total_value FROM User_portfolio WHERE user_ID = %s", (user_ID,))
+        cursor.execute("SELECT total_value FROM User_portfolio WHERE user_ID ")
         user_portfolio = cursor.fetchone()
 
         if not user_portfolio:
@@ -445,8 +441,7 @@ def buy_stock():
             UPDATE User_portfolio
             SET total_value = %s,
                 updated_at = %s
-            WHERE user_ID = %s
-        """, (new_total_value, now, user_ID))
+        """, (new_total_value, now))
         cursor.execute("SELECT current_balance FROM Bank_Account WHERE bank_ID = %s", (bank_ID,))
         bank_account = cursor.fetchone()
 
