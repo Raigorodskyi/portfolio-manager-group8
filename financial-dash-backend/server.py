@@ -393,24 +393,7 @@ def buy_stock():
         """, (bank_ID, now))
         transaction_ID = cursor.lastrowid
        
-        cursor.execute("SELECT * FROM Stocks WHERE stock_ticker = %s", (stock_ticker,))
-        existing_stock = cursor.fetchone()
-
-        if existing_stock:
-            new_total = (existing_stock['number_of_shares'] + number_of_shares) 
-            total_cost = stock_current_price *  (existing_stock['number_of_shares'] + number_of_shares) 
-            avg_price = total_cost / new_total
-            cursor.execute("""
-                UPDATE Stocks
-                SET number_of_shares = %s,
-                    purchase_price_per_share = %s,
-                    current_price_per_share = %s,
-                    updated_at_date = %s
-                WHERE stock_ticker = %s
-            """, (new_total, round(avg_price, 2), stock_current_price , now, stock_ticker))
-        else:
-        
-            cursor.execute("""
+        cursor.execute("""
                 INSERT INTO Stocks (
                     transaction_ID,
                     number_of_shares,
@@ -429,7 +412,7 @@ def buy_stock():
             ))
 
         
-        cursor.execute("SELECT total_value FROM User_portfolio WHERE user_ID ")
+        cursor.execute("SELECT total_value FROM User_portfolio")
         user_portfolio = cursor.fetchone()
 
         if not user_portfolio:
