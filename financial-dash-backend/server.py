@@ -193,9 +193,9 @@ def get_stock_value_from_ticker(ticker):
 @app.route("/api/sell_stock", methods=["POST"])
 def sell_stock():
     data = request.get_json()
-    quantity_to_sell = int(data.get("quantity", 0))
     stock_ticker = data.get("stock_ticker", "").upper()
-    bank_id = int(data.get("bank_id", 0))
+    quantity_to_sell = int(data.get("number_of_shares", 0))
+    bank_id = int(data.get("bank_ID", 0))
 
     if quantity_to_sell <= 0 or not stock_ticker or bank_id <= 0:
         return jsonify({"error": "Invalid input"}), 400
