@@ -55,6 +55,7 @@ ngOnInit(): void {
 
   this.portfolioService.getTotalValue().subscribe((data) => {
     this.cash = data.total_value;
+    console.log(this.cash);
 
     this.globalValue = data.total_value + bondsTotal + stocksTotal;
 

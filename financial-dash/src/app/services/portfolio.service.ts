@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class PortfolioService {
-  private apiUrl = 'http://127.0.0.1:5000/user/total_value';
+  private apiUrl = 'http://127.0.0.1:5000/api/total_value';
 
   constructor(private http: HttpClient) {}
 
