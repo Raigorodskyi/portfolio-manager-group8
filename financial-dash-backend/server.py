@@ -1,10 +1,13 @@
 from datetime import datetime
 from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request
 import mysql.connector
 import yfinance as yf
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
+from datetime import datetime
+
 
 load_dotenv()
 app = Flask(__name__)
@@ -15,7 +18,7 @@ def get_db_connection():
     return mysql.connector.connect(
         host=os.getenv("DB_HOST"),
         user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"), # Use your actual password here
+        password=os.getenv("DB_PASSWORD"),
         database=os.getenv("DB_NAME")
     )
 
@@ -272,5 +275,196 @@ def sell_stock():
         cursor.close()
         conn.close()
 
+
+@app.route('/api/buy_bond', methods=['POST'])
+def buy_bond():
+    data = request.get_json()
+
+    bond_ticker = data.get('bond_ticker')
+    bond_name = data.get('bond_name')
+    bond_current_price = data.get('bond_current_price')
+    coupon_rate = data.get('coupon_rate')
+    number_of_bonds = data.get('number_of_bonds')
+    maturity_date = data.get('maturity_date')
+    bank_ID = data.get('bank_ID')
+    user_ID = data.get('user_ID')
+    if not all([bond_ticker, bond_name, bond_current_price, coupon_rate, number_of_bonds, maturity_date, bank_ID, user_ID]):
+        return jsonify({"error": "Missing fields"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+       
+        now = datetime.now()
+        cursor.execute("""
+            INSERT INTO Transaction (bank_ID, date)
+            VALUES (%s, %s)
+        """, (bank_ID, now))
+        transaction_ID = cursor.lastrowid
+
+    
+        cursor.execute("SELECT * FROM Bonds WHERE bond_ticker = %s", (bond_ticker,))
+        existing_bond = cursor.fetchone()
+
+        if existing_bond:
+            new_total = existing_bond['number_of_bonds'] + number_of_bonds
+
+            cursor.execute("""
+                UPDATE Bonds
+                SET number_of_bonds = %s,
+                    bond_current_price = %s,
+                    transaction_ID = %s
+                WHERE bond_ticker = %s
+            """, (new_total, bond_current_price, transaction_ID, bond_ticker))
+
+        else:
+            
+            cursor.execute("""
+                INSERT INTO Bonds (bond_name, bond_ticker, bond_current_price, coupon_rate, number_of_bonds, maturity_date, transaction_ID)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (bond_name, bond_ticker, bond_current_price, coupon_rate, number_of_bonds, maturity_date, transaction_ID))
+        total_cost = bond_current_price * number_of_bonds
+        cursor.execute("SELECT total_value FROM User_portfolio WHERE user_ID = %s", (user_ID,))
+        user_portfolio = cursor.fetchone()
+
+        if not user_portfolio:
+            return jsonify({"error": "User not found"}), 404
+
+        new_value = float(user_portfolio['total_value']) - float(total_cost)
+
+        cursor.execute("""
+            UPDATE User_portfolio
+            SET total_value = %s,
+                updated_at = %s
+            WHERE user_ID = %s
+        """, (new_value, now, user_ID))
+        cursor.execute("SELECT current_balance FROM Bank_Account WHERE bank_ID = %s", (bank_ID,))
+        bank_account = cursor.fetchone()
+
+        if not bank_account:
+            return jsonify({"error": "Bank account not found"}), 404
+
+        new_bank_balance = float(bank_account['current_balance']) - total_cost
+
+        cursor.execute("""
+            UPDATE Bank_Account
+            SET current_balance = %s,
+                bank_account_last_updated = %s
+            WHERE bank_ID = %s
+        """, (new_bank_balance, now, bank_ID))
+
+        conn.commit()
+        return jsonify({"message": "Bond purchased and portfolio updated"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/buy_stock', methods=['POST'])
+def buy_stock():
+    data = request.get_json()
+    stock_ticker = data.get('stock_ticker')
+    number_of_shares = data.get('number_of_shares')
+    purchase_price_per_share = data.get('purchase_price_per_share')
+    current_price_per_share = data.get('current_price_per_share')
+    purchase_date = data.get('purchase_date')
+    bank_ID = data.get('bank_ID')
+    user_ID = data.get('user_ID')
+    if not all([stock_ticker, number_of_shares, purchase_price_per_share, current_price_per_share, purchase_date, bank_ID, user_ID]):
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        now = datetime.now()
+        cursor.execute("""
+            INSERT INTO Transaction (bank_ID, date)
+            VALUES (%s, %s)
+        """, (bank_ID, now))
+        transaction_ID = cursor.lastrowid
+       
+        cursor.execute("SELECT * FROM Stocks WHERE stock_ticker = %s", (stock_ticker,))
+        existing_stock = cursor.fetchone()
+
+        if existing_stock:
+            new_total = existing_stock['number_of_shares'] + number_of_shares
+            total_cost = (existing_stock['purchase_price_per_share'] * existing_stock['number_of_shares']) + (purchase_price_per_share * number_of_shares)
+            avg_price = total_cost / new_total
+            cursor.execute("""
+                UPDATE Stocks
+                SET number_of_shares = %s,
+                    purchase_price_per_share = %s,
+                    current_price_per_share = %s,
+                    updated_at_date = %s
+                WHERE stock_ticker = %s
+            """, (new_total, round(avg_price, 2), current_price_per_share, now, stock_ticker))
+        else:
+        
+            cursor.execute("""
+                INSERT INTO Stocks (
+                    transaction_ID,
+                    number_of_shares,
+                    purchase_price_per_share,
+                    current_price_per_share,
+                    purchase_date,
+                    stock_ticker
+                ) VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                transaction_ID,
+                number_of_shares,
+                purchase_price_per_share,
+                current_price_per_share,
+                purchase_date,
+                stock_ticker
+            ))
+
+        total_cost = purchase_price_per_share * number_of_shares
+        cursor.execute("SELECT total_value FROM User_portfolio WHERE user_ID = %s", (user_ID,))
+        user_portfolio = cursor.fetchone()
+
+        if not user_portfolio:
+            return jsonify({"error": "User not found"}), 404
+
+        new_total_value = float(user_portfolio['total_value']) - float(total_cost)
+
+        cursor.execute("""
+            UPDATE User_portfolio
+            SET total_value = %s,
+                updated_at = %s
+            WHERE user_ID = %s
+        """, (new_total_value, now, user_ID))
+        cursor.execute("SELECT current_balance FROM Bank_Account WHERE bank_ID = %s", (bank_ID,))
+        bank_account = cursor.fetchone()
+
+        if not bank_account:
+            return jsonify({"error": "Bank account not found"}), 404
+
+        new_bank_balance = float(bank_account['current_balance']) - total_cost
+
+        cursor.execute("""
+            UPDATE Bank_Account
+            SET current_balance = %s,
+                bank_account_last_updated = %s
+            WHERE bank_ID = %s
+        """, (new_bank_balance, now, bank_ID))
+
+        conn.commit()
+        return jsonify({"message": "Stock purchase recorded, bank account and portfolio updated"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+        
+        
 if __name__ == "__main__":
     app.run(debug=True)
