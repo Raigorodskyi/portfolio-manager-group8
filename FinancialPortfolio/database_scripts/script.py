@@ -1,15 +1,20 @@
 import mysql.connector
-
 # First, connect WITHOUT specifying a database to create it
+from dotenv import load_dotenv
+import os
+
+
+# Load variables from .env
+load_dotenv()
+
+# Connect using environment variables
 conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="n3u3da!"
-    # No database parameter here initially
+    host=os.getenv("DB_HOST"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD")
+    # Optional: database=os.getenv("DB_NAME")
 )
-
 cursor = conn.cursor()
-
 # Create the database
 cursor.execute("CREATE DATABASE IF NOT EXISTS finance_portfolio;")
 

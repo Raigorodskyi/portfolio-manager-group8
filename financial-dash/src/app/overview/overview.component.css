@@ -1,4 +1,4 @@
-  /* Overall Page Background */
+/* Global styles */
 body, .dashboard-container {
   margin: 0;
   padding: 0;
@@ -38,66 +38,7 @@ body, .dashboard-container {
   background: #ffffff22;
 }
 
-.dashboard-top {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 1.5rem;
-  padding: 2rem;
-}
-
-.portfolio-box {
-  padding: 1rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.portfolio-content {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-/* Chart takes half the width of the box */
-.chart-container {
-  flex: 0 0 50%;
-  max-width: 50%;
-  height: auto;
-}
-
-.chart-container canvas {
-  width: 100% !important;
-  height: auto !important;
-}
-
-/* Stats take the rest of the space */
-.stats {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.value {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.gain {
-  color: green;
-}
-
-.return {
-  color: #555;
-}
-
-.dashboard-bottom {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 1.5rem;
-  padding: 2rem;
-}
-
+/* Grid layout */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -106,42 +47,52 @@ body, .dashboard-container {
   padding: 2rem;
   grid-template-areas:
     "portfolio top"
-    "stocks top";
+    "stocks bonds";
 }
 
+/* Grid area assignments */
 .portfolio-box {
   grid-area: portfolio;
+  background: linear-gradient(to right, #2400ff, #7900ff);
 }
 
-.your-stocks-box {
-  grid-area: stocks;
+.portfolio-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.stats {
+  flex: 1;
+  min-width: 200px;
 }
 
 .top-performers-box {
   grid-area: top;
-}
-
-/* Card Styles */
-.portfolio-box,
-.top-performers-box,
-.your-stocks-box {
-  background: linear-gradient(to bottom right, #7e07fd, #8e24aa);
-  border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-}
-
-.portfolio-box {
-  background: linear-gradient(to right, #2400ff, #7900ff);
-}
-
-.top-performers-box {
   background: linear-gradient(to right, #d4c4f8, #b48ef5);
   color: #222;
 }
 
 .your-stocks-box {
+  grid-area: stocks;
+  background: linear-gradient(to right, #ed5bd2, #f44776);
+}
+
+.your-bonds-box {
+  grid-area: bonds;
   background: linear-gradient(to right, #853acc, #6807e6);
+}
+
+/* Card base styles */
+.portfolio-box,
+.top-performers-box,
+.your-stocks-box,
+.your-bonds-box {
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 /* Headings */
@@ -182,7 +133,25 @@ th {
   font-weight: bold;
 }
 
+.chart-container {
+  max-width: 300px;
+  flex: 0 0 auto;
+}
+
+
+
 tr:last-child td {
   border-bottom: none;
 }
-  
+
+/* Responsive fallback */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "portfolio"
+      "top"
+      "stocks"
+      "bonds";
+  }
+}

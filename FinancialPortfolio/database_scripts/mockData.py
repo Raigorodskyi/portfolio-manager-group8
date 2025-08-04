@@ -1,13 +1,14 @@
 import mysql.connector
 from datetime import datetime, date, timedelta
 import random
-
+from dotenv import load_dotenv
+import os
 # Connect to the database
 conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="n3u3da!",
-    database="finance_portfolio"
+    host=os.getenv("DB_HOST"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD")
+    # Optional: database=os.getenv("DB_NAME")
 )
 
 cursor = conn.cursor()
