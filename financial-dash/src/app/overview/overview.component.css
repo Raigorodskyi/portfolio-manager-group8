@@ -187,7 +187,7 @@ th {
   margin-top: 0;
 }
 .view-button:hover {
-  background-color: #991d8f; /* Tailwind blue-600 */
+  background-color: #eb0fd8; /* Tailwind blue-600 */
 }
 
 tr:last-child td {
