@@ -203,7 +203,6 @@ def view_stock_action(data):
             return {
                 "stock_ticker": ticker,
                 "stock_name": stock_name,
-                "shares": shares,
                 "current_price": float(current_price)
             }
         else:
@@ -354,7 +353,13 @@ def buy_stock_action(data):
         """, (new_bank_balance, now, bank_ID))
 
         conn.commit()
-        return {"message": "Stock purchased successfully"}, 200
+        return {
+            "message": "Stock purchased successfully",
+            "stock_ticker": stock_ticker,
+            "quantity_sold": number_of_shares,
+            "sale_value": total_cost,
+            "transaction_id": transaction_ID
+        }, 200
 
     except Exception as e:
         conn.rollback()
@@ -566,9 +571,8 @@ def view_bond(ticker):
         if bond_name and current_price:
             bond_values = {}
             bond_values[ticker] = {
+                'bond_ticker': ticker,
                 'bond_name': bond_name,
-                'number_of_bonds': num_bonds,
-                'purchase_price_per_bond': purchase_price,
                 'current_price': round(float(current_price), 2),
                 'bond_yield': round(float(bond_yield), 2) if bond_yield else None
             }
