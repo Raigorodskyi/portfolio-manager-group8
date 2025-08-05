@@ -1,8 +1,8 @@
 export interface Bond {
-    'Bond Amount (Purchase Price)': number;
-    'Bond Name': string;
-    'Bond Ticker': string;
-    'Current Market Price': number;
-    'Maturity Date': string;
-    'Number of Bonds': number;
-  }
+  'Bond Name': string;
+  'Bond Ticker': string;
+  'Bond Yield (%)': string;
+  'Current Market Price (from YFinance)': number;
+  'Number of Bonds': number;
+  'Purchase Price per Bond': number;
+}

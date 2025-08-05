@@ -136,6 +136,12 @@ body, .dashboard-container {
     margin-top: 0.25rem;
     color: #9cffac;
   }
+
+  .loss {
+    font-size: 1.2rem;
+    margin-top: 0.25rem;
+    color: rgb(243, 9, 9); 
+  }
   
   /* Tables */
   table {

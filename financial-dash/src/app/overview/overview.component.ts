@@ -19,6 +19,7 @@ export class OverviewComponent implements OnInit {
 
   isBrowser: boolean = false;
   globalValue = 0;
+  previousGlobalValue = 0;
   cash = 0;
   bonds: Bond[] = [];
   stockValues: { [ticker: string]: Stock } = {};
@@ -48,6 +49,11 @@ getGainLoss(stock: Stock): number {
   return (stock.current_price - stock.purchase_price) * stock.shares;
 }
 
+getBondDiff(bond: Bond): number {
+  return (bond['Current Market Price (from YFinance)'] - bond['Purchase Price per Bond']) 
+              * bond['Number of Bonds'];
+}
+
 ngOnInit(): void {
   // First, fetch stock values
   this.portfolioService.getStocks().subscribe((stockData) => {
@@ -63,19 +69,27 @@ ngOnInit(): void {
       0
     );
 
+    const prevStocksTotal = this.stockList.reduce(
+      (sum, stock) => sum + stock.data.purchase_price * stock.data.shares,
+      0
+    );
+
     // Then fetch bonds
     this.portfolioService.getBonds().subscribe((bondsData) => {
       this.bonds = bondsData;
 
       const bondsTotal = this.bonds.reduce((sum, bond) =>
-        sum + bond['Current Market Price'] * bond['Number of Bonds'], 0);
+        sum + bond['Current Market Price (from YFinance)'] * bond['Number of Bonds'], 0);
 
+      const prevBondsTotal = this.bonds.reduce((sum, bond) =>
+        sum + bond['Purchase Price per Bond'] * bond['Number of Bonds'], 0);
       // Then fetch cash
       this.portfolioService.getCashValue().subscribe((cashData) => {
         this.cash = cashData.total_value;
 
         // Global portfolio value
         this.globalValue = this.cash + bondsTotal + stocksTotal;
+        this.previousGlobalValue = this.cash + prevBondsTotal + prevStocksTotal;
         if(isPlatformBrowser(this.platformId)) {
           localStorage.setItem('globalValue', this.globalValue.toString());
         }

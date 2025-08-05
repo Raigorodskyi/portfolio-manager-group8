@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class StocksViewComponent implements OnInit {
 stockValues: { [ticker: string]: Stock } = {};
+marketStocks: { ticker: string; data: Stock }[] = [];
 stockList: { ticker: string; data: Stock }[] = [];
 isBrowser: boolean = false;
 stocksValuation: number = 0;
@@ -42,12 +43,16 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
     });
   }
 
-  get filteredStocks() {
-    const query = this.searchQuery.toLowerCase();
-    return this.stockList.filter(stock =>
-      stock.data.stock_name.toLowerCase().includes(query) ||
-      stock.ticker.toLowerCase().includes(query)
-    );
+  getMarketStock() {
+    const query = this.searchQuery.toUpperCase();
+
+    this.portfolioService.getStockByTicker(query).subscribe((stock) => {
+      this.marketStocks = Object.entries(stock).map(([ticker, stock]) => ({
+        ticker,
+        data: stock
+      }))
+    });
+    console.log(this.marketStocks, query);
   }
 
   getGainLoss(stock: Stock): number {
