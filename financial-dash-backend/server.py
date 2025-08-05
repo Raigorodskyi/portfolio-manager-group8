@@ -68,7 +68,7 @@ def get_stock_value():
     return jsonify(stock_values)
 
 # API route that fetches the total amount of cash the user has deposited on our platform for buying/selling stocks
-@app.route("/api/total_value", methods=["GET"])
+@app.route("/api/total_value", methods=["POST"])
 def get_total_value():
     try:
         conn = get_db_connection()
@@ -83,7 +83,37 @@ def get_total_value():
             return jsonify({"error": "User not found"}), 404
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
+@app.route('/api/transactions', methods=['GET'])
+def get_all_transactions():
+    try:
+        data = request.get_json()
+        bank_id = data.get('bank_id')  # Default to bank ID 1 if not provided
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
+        cursor.execute("""
+            SELECT transaction_ID, date
+            FROM Transaction
+            WHERE bank_ID = %s
+            ORDER BY date DESC
+        """, (bank_id,))
+        transactions = cursor.fetchall()
+
+        result = []
+        for tx in transactions:
+            result.append({
+                "Transaction ID": tx['transaction_ID'],
+                "Date": tx['date'].strftime("%Y-%m-%d %H:%M:%S"),
+                "Amount": tx['amount']
+            })
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(result)
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
 # API route that fetches all the user's owned bonds and bond related data
 @app.route('/api/bonds', methods=['GET'])
 def get_all_bonds():
