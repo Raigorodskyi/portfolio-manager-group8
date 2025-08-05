@@ -83,6 +83,8 @@ def get_total_value():
             return jsonify({"error": "User not found"}), 404
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
+    
+# API route that returns the list of user's transactions
 @app.route('/api/transactions', methods=['GET'])
 def get_all_transactions():
     try:
@@ -114,6 +116,8 @@ def get_all_transactions():
 
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
+    
+    
 # API route that fetches all the user's owned bonds and bond related data
 @app.route('/api/bonds', methods=['GET'])
 def get_all_bonds():
@@ -331,9 +335,9 @@ def sell_stock():
 
         # Insert into transaction table
         cursor.execute("""
-            INSERT INTO Transaction (bank_id, date)
-            VALUES (%s, %s)
-        """, (bank_id, datetime.now()))
+            INSERT INTO Transaction (bank_id, date, amount)
+            VALUES (%s, %s, %s)
+        """, (bank_id, datetime.now()), sale_value)
         transaction_id = cursor.lastrowid
 
         conn.commit()
@@ -376,11 +380,11 @@ def buy_stock():
     try:
         now = datetime.now()
         cursor.execute("""
-            INSERT INTO Transaction (bank_ID, date)
-            VALUES (%s, %s)
-        """, (bank_ID, now))
+            INSERT INTO Transaction (bank_ID, date, amount)
+            VALUES (%s, %s, %s)
+        """, (bank_ID, now, total_cost))
         transaction_ID = cursor.lastrowid
-       
+        
         cursor.execute("""
                 INSERT INTO Stocks (
                     transaction_ID,
@@ -517,8 +521,8 @@ def sell_bond():
         # Insert into transaction table
         cursor.execute("""
             INSERT INTO Transaction (bank_id, date)
-            VALUES (%s, %s)
-        """, (bank_id, datetime.now()))
+            VALUES (%s, %s, %s)
+        """, (bank_id, datetime.now(), sale_value))
         transaction_id = cursor.lastrowid
 
         conn.commit()
@@ -578,8 +582,8 @@ def buy_bond():
         # Insert into Transaction table
         cursor.execute("""
             INSERT INTO Transaction (bank_ID, date)
-            VALUES (%s, %s)
-        """, (bank_id, datetime.now()))
+            VALUES (%s, %s, %s)
+        """, (bank_id, datetime.now(), total_cost))
         transaction_id = cursor.lastrowid
 
         # Insert into Bonds table
