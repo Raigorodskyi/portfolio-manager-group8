@@ -76,8 +76,9 @@ ngOnInit(): void {
 
         // Global portfolio value
         this.globalValue = this.cash + bondsTotal + stocksTotal;
-        localStorage.setItem('globalValue', this.globalValue.toString());
-
+        if(isPlatformBrowser(this.platformId)) {
+          localStorage.setItem('globalValue', this.globalValue.toString());
+        }
 
         // Update pie chart
         this.pieChartData = {

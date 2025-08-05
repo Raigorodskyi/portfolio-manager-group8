@@ -21,8 +21,9 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
 
 
 ngOnInit(): void {
+  if(isPlatformBrowser(this.platformId)) {
     this.globalValue = Number(localStorage.getItem('globalValue'));
-
+  }
     this.portfolioService.getBonds().subscribe((bondsData) => {
       this.bonds = bondsData;
 

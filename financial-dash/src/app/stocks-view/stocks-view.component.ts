@@ -21,8 +21,9 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
 }
   
   ngOnInit(): void {
-    this.globalValue = Number(localStorage.getItem('globalValue'));
-    // First, fetch stock values
+    if(isPlatformBrowser(this.platformId)) {
+      this.globalValue = Number(localStorage.getItem('globalValue'));
+    }// First, fetch stock values
     this.portfolioService.getStocks().subscribe((stockData) => {
       this.stockValues = stockData;
       this.stockList = Object.entries(stockData).map(([ticker, stock]) => ({
