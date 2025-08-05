@@ -24,7 +24,7 @@ To start the Angular frontend:
    ```bash
    npm run start
     # or
-    ng serve
+   ng serve
 
 ## 🌐 Flask API Endpoints
 
