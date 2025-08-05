@@ -508,7 +508,99 @@ def sell_bond():
     finally:
         cursor.close()
         conn.close()
-        
+@app.route("/api/buy_bond", methods=["POST"])
+def buy_bond():
+    data = request.get_json()
+    bond_ticker = data.get("bond_ticker", "").upper()
+    number_of_bonds = int(data.get("number_of_bonds", 0))
+    bank_id = int(data.get("bank_ID", 0))
+
+    if not bond_ticker or number_of_bonds <= 0 or bank_id <= 0:
+        return jsonify({"error": "Invalid input"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        bond_data = yf.Ticker(bond_ticker)
+        current_price = bond_data.info.get("regularMarketPrice")
+        if not current_price:
+            return jsonify({"error": "Unable to fetch bond price"}), 500
+
+        bond_name = bond_data.info.get("shortName", bond_ticker)
+        bond_yield = bond_data.info.get("yield", 3.0)
+        dividend_frequency = bond_data.info.get("dividendFrequency", "Annual")
+
+        total_cost = round(current_price * number_of_bonds, 2)
+
+        # Check bank account
+        cursor.execute("""
+            SELECT current_balance FROM Bank_Account
+            WHERE bank_ID = %s
+        """, (bank_id,))
+        bank = cursor.fetchone()
+
+        if not bank:
+            return jsonify({"error": "Bank account not found"}), 404
+        if bank['current_balance'] < total_cost:
+            return jsonify({"error": "Insufficient bank balance"}), 400
+
+        # Insert into Transaction table
+        cursor.execute("""
+            INSERT INTO Transaction (bank_ID, date)
+            VALUES (%s, %s)
+        """, (bank_id, datetime.now()))
+        transaction_id = cursor.lastrowid
+
+        # Insert into Bonds table
+        cursor.execute("""
+            INSERT INTO Bonds (
+                bond_name, bond_ticker, purchase_price_per_bond, bond_yield,
+                number_of_bonds, dividend_frequency, last_updated, transaction_ID
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            bond_name,
+            bond_ticker,
+            current_price,
+            bond_yield,
+            number_of_bonds,
+            dividend_frequency,
+            datetime.now(),
+            transaction_id
+        ))
+
+        # Update bank balance
+        cursor.execute("""
+            UPDATE Bank_Account
+            SET current_balance = current_balance - %s
+            WHERE bank_ID = %s
+        """, (total_cost, bank_id))
+
+        # Update user portfolio
+        cursor.execute("""
+            UPDATE User_portfolio
+            SET total_value = total_value - %s
+        """, (total_cost,))
+
+
+        conn.commit()
+
+        return jsonify({
+            "message": "Bond purchased successfully",
+            "bond_ticker": bond_ticker,
+            "quantity_bought": number_of_bonds,
+            "purchase_price": current_price,
+            "total_cost": total_cost,
+            "transaction_id": transaction_id
+        })
+
+    except mysql.connector.Error as err:
+        conn.rollback()
+        return jsonify({"error": str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
         
 if __name__ == "__main__":
     app.run(debug=True)
