@@ -275,97 +275,7 @@ def sell_stock():
         cursor.close()
         conn.close()
 
-# API route for user to buy bonds
-@app.route('/api/buy_bond', methods=['POST'])
-def buy_bond():
-    data = request.get_json()
-    bond_ticker = data.get('bond_ticker')
-    number_of_bonds = data.get('number_of_bonds')
-    bank_ID = data.get('bank_ID')
-    ticker=yf.Ticker(bond_ticker)
-    bond_name = ticker.info.get('shortName', 'N/A')
-   
-    if not all([bond_ticker, number_of_bonds,  bank_ID]):
-        return jsonify({"error": "Missing fields"}), 400
-    try:
-            bond_info = yf.Ticker(bond_ticker)
-            bond_current_price = bond_info.history(period="1d")['Close'].iloc[-1]
-    except Exception as e:
-            return jsonify({"error": f"Failed to fetch bond price: {str(e)}"}), 500
-    total_cost = bond_current_price * number_of_bonds
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:       
-        now = datetime.now()
-        cursor.execute("""
-            INSERT INTO Transaction (bank_ID, date)
-            VALUES (%s, %s)
-        """, (bank_ID, now))
-        transaction_ID = cursor.lastrowid
-
-    
-        cursor.execute("SELECT * FROM Bonds WHERE bond_ticker = %s", (bond_ticker,))
-        existing_bond = cursor.fetchone()
-        
-        if existing_bond:
-            new_total = existing_bond['number_of_bonds'] + number_of_bonds
-         
-            cursor.execute("""
-                UPDATE Bonds
-                SET number_of_bonds = %s,
-                    bond_current_price = %s,
-                    transaction_ID = %s
-                WHERE bond_ticker = %s
-            """, (new_total, bond_current_price, transaction_ID, bond_ticker))
-
-        else:
-            
-            cursor.execute("""
-                INSERT INTO Bonds (bond_name, bond_ticker, bond_current_price, coupon_rate, number_of_bonds, maturity_date, transaction_ID)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (bond_name, bond_ticker, bond_current_price, coupon_rate, number_of_bonds, maturity_date, transaction_ID))
-        cursor.execute("SELECT total_value FROM User_portfolio WHERE user_ID = %s", (user_ID,))
-        user_portfolio = cursor.fetchone()
-
-        if not user_portfolio:
-            return jsonify({"error": "User not found"}), 404
-
-        new_value = float(user_portfolio['total_value']) - float(total_cost)
-
-        cursor.execute("""
-            UPDATE User_portfolio
-            SET total_value = %s,
-                updated_at = %s
-         
-        """, (new_value, now))
-        cursor.execute("SELECT current_balance FROM Bank_Account WHERE bank_ID = %s", (bank_ID,))
-        bank_account = cursor.fetchone()
-
-        if not bank_account:
-            return jsonify({"error": "Bank account not found"}), 404
-
-        new_bank_balance = float(bank_account['current_balance']) - total_cost
-
-        cursor.execute("""
-            UPDATE Bank_Account
-            SET current_balance = %s,
-                bank_account_last_updated = %s
-            WHERE bank_ID = %s
-        """, (new_bank_balance, now, bank_ID))
-
-        conn.commit()
-        return jsonify({"message": "Bond purchased and portfolio updated"}), 200
-
-    except Exception as e:
-        conn.rollback()
-        return jsonify({"error": str(e)}), 500
-
-    finally:
-        cursor.close()
-        conn.close()
-
-# API route for user to buy bonds
+# API route for user to buy stocks
 @app.route('/api/buy_stock', methods=['POST'])
 def buy_stock():
     data = request.get_json()
@@ -393,7 +303,6 @@ def buy_stock():
         """, (bank_ID, now))
         transaction_ID = cursor.lastrowid
        
-       
         cursor.execute("""
                 INSERT INTO Stocks (
                     transaction_ID,
@@ -412,7 +321,6 @@ def buy_stock():
                 stock_ticker
             ))
 
-        
         cursor.execute("SELECT total_value FROM User_portfolio")
         user_portfolio = cursor.fetchone()
 
@@ -421,7 +329,6 @@ def buy_stock():
 
         new_total_value = float(user_portfolio['total_value']) - float(total_cost)
 
-        
         cursor.execute("SELECT current_balance FROM Bank_Account WHERE bank_ID = %s", (bank_ID,))
         bank_account = cursor.fetchone()
         if not bank_account:
@@ -460,6 +367,119 @@ def buy_stock():
         conn.rollback()
         return jsonify({'error': str(e)}), 500
 
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# API that allows a user to sell a bond of their choice
+@app.route("/api/sell_bond", methods=["POST"])
+def sell_bond():
+    data = request.get_json()
+    bond_ticker = data.get("bond_ticker", "").upper()
+    quantity_to_sell = int(data.get("number_of_bonds", 0))
+    bank_id = int(data.get("bank_ID", 0))
+
+    if quantity_to_sell <= 0 or not bond_ticker or bank_id <= 0:
+        return jsonify({"error": "Invalid input"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # Get bond record from DB
+        cursor.execute("""
+            SELECT bond_ID, bond_name, bond_ticker, purchase_price_per_bond, bond_yield, 
+                   number_of_bonds, dividend_frequency, transaction_ID
+            FROM Bonds
+            WHERE bond_ticker = %s
+        """, (bond_ticker,))
+        bond_row = cursor.fetchone()
+
+        if not bond_row:
+            return jsonify({"error": "Bond not found"}), 404
+        if bond_row['number_of_bonds'] < quantity_to_sell:
+            return jsonify({"error": "Not enough bonds to sell"}), 400
+
+        # Get current market price from yfinance
+        bond_data = yf.Ticker(bond_ticker)
+        current_price = bond_data.info.get("regularMarketPrice", bond_row['purchase_price_per_bond'])
+        if not current_price:
+            return jsonify({"error": "Unable to fetch current bond price"}), 500
+
+        # Calculate coupons per year
+        freq_map = {
+            "Annual": 1,
+            "Semi-Annual": 2,
+            "Quarterly": 4,
+            "Monthly": 12
+        }
+        coupons_per_year = freq_map.get(bond_row['dividend_frequency'], 1)
+
+        # Approximate days since last coupon
+        # (Here we just assume equal spacing between coupon dates)
+        days_in_period = 365 / coupons_per_year
+        days_since_last_coupon = days_in_period / 2  # <-- Approximation, can replace with real data
+
+        # Calculate accrued interest
+        accrued_interest_per_bond = round(
+            float(bond_row['purchase_price_per_bond']) *
+            (float(bond_row['bond_yield']) / 100 / coupons_per_year) *
+            (days_since_last_coupon / days_in_period), 2
+        )
+        total_accrued_interest = round(accrued_interest_per_bond * quantity_to_sell, 2)
+
+        # Sale value (market value + accrued interest)
+        sale_value = round((quantity_to_sell * current_price) + total_accrued_interest, 2)
+
+        # Update or delete bond in DB
+        if bond_row['number_of_bonds'] == quantity_to_sell:
+            cursor.execute("DELETE FROM Bonds WHERE bond_ID = %s", (bond_row['bond_ID'],))
+        else:
+            cursor.execute("""
+                UPDATE Bonds
+                SET number_of_bonds = number_of_bonds - %s
+                WHERE bond_ID = %s
+            """, (quantity_to_sell, bond_row['bond_ID']))
+
+        # Update bank account balance
+        cursor.execute("""
+            UPDATE Bank_Account
+            SET current_balance = current_balance + %s
+            WHERE bank_id = %s
+        """, (sale_value, bank_id))
+
+        # Update user portfolio total_value
+        cursor.execute("""
+            UPDATE User_portfolio
+            SET total_value = total_value + %s
+            WHERE user_id = (
+                SELECT user_id FROM Bank_Account WHERE bank_id = %s
+            )
+        """, (sale_value, bank_id))
+
+        # Insert into transaction table
+        cursor.execute("""
+            INSERT INTO Transaction (bank_id, date)
+            VALUES (%s, %s)
+        """, (bank_id, datetime.now()))
+        transaction_id = cursor.lastrowid
+
+        conn.commit()
+
+        return jsonify({
+            "message": "Bond sold successfully",
+            "bond_ticker": bond_ticker,
+            "quantity_sold": quantity_to_sell,
+            "market_value": quantity_to_sell * current_price,
+            "accrued_interest": total_accrued_interest,
+            "sale_value": sale_value,
+            "transaction_id": transaction_id
+        })
+
+    except mysql.connector.Error as err:
+        conn.rollback()
+        return jsonify({"error": str(err)}), 500
     finally:
         cursor.close()
         conn.close()
