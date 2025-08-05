@@ -68,7 +68,7 @@ def get_stock_value():
     return jsonify(stock_values)
 
 # API route that fetches the total amount of cash the user has deposited on our platform for buying/selling stocks
-@app.route("/api/total_value", methods=["POST"])
+@app.route("/api/total_value", methods=["GET"])
 def get_total_value():
     try:
         conn = get_db_connection()
@@ -85,7 +85,7 @@ def get_total_value():
         return jsonify({"error": str(err)}), 500
     
 # API route that returns the list of user's transactions
-@app.route('/api/transactions', methods=['GET'])
+@app.route('/api/transactions', methods=['POST'])
 def get_all_transactions():
     try:
         data = request.get_json()
@@ -94,7 +94,7 @@ def get_all_transactions():
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT transaction_ID, date
+            SELECT transaction_ID, date, amount
             FROM Transaction
             WHERE bank_ID = %s
             ORDER BY date DESC
@@ -191,66 +191,223 @@ def get_bank_accounts():
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
     
-    
-# API that verifies and fetches data for a specific stock ticker through yfinance
-@app.route("/api/stock_value_from_ticker/<string:ticker>", methods=["GET"])
-def get_stock_value_from_ticker(ticker):
-    ticker = ticker.upper()
 
-    try:
-        shares = int(request.args.get("shares", 0))
-    except (TypeError, ValueError):
-        shares = 0
+def view_stock_action(data):
+    ticker = data.get("stock_ticker", "").upper()
+    shares = int(data.get("number_of_shares", 0))
 
     try:
         stock = yf.Ticker(ticker)
         info = stock.info
-
         stock_name = info.get("shortName")
         current_price = info.get("regularMarketPrice")
 
         if stock_name and current_price:
-            stock_values = {}
-            stock_values[ticker.replace("\n","")] = {
-                'stock_name': stock_name,
-                'shares': shares,
-                'current_price': float(current_price)
+            return {
+                "stock_ticker": ticker,
+                "stock_name": stock_name,
+                "shares": shares,
+                "current_price": float(current_price)
             }
-            return jsonify(stock_values)
         else:
-            return jsonify({
-                "ticker": ticker,
-                "error": "Could not fetch stock data"
-            }), 404
+            return {"error": "Could not fetch stock data"}, 404
     except Exception as e:
-        return jsonify({"ticker": ticker, "error": str(e)}), 500
-    
-    
-# API that verifies and fetches data for a specific bond ticker through yfinance
+        return {"error": str(e)}, 500
+
+def sell_stock_action(data):
+    stock_ticker = data.get("stock_ticker", "").upper()
+    quantity_to_sell = int(data.get("number_of_shares", 0))
+    bank_id = int(data.get("bank_ID", 0))
+
+    if quantity_to_sell <= 0 or not stock_ticker or bank_id <= 0:
+        return {"error": "Invalid input"}, 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT stock_id, number_of_shares, purchase_price_per_share
+            FROM Stocks
+            WHERE stock_ticker = %s
+        """, (stock_ticker,))
+        stock_row = cursor.fetchone()
+
+        if not stock_row:
+            return {"error": "Stock not found"}, 404
+        if stock_row['number_of_shares'] < quantity_to_sell:
+            return {"error": "Not enough shares to sell"}, 400
+
+        stock_data = yf.Ticker(stock_ticker)
+        current_price = stock_data.info.get("regularMarketPrice")
+        if not current_price:
+            return {"error": "Unable to fetch stock price"}, 500
+
+        sale_value = quantity_to_sell * current_price
+
+        # Update Stocks table
+        if stock_row['number_of_shares'] == quantity_to_sell:
+            cursor.execute("DELETE FROM Stocks WHERE stock_id = %s", (stock_row['stock_id'],))
+        else:
+            cursor.execute("""
+                UPDATE Stocks SET number_of_shares = number_of_shares - %s
+                WHERE stock_id = %s
+            """, (quantity_to_sell, stock_row['stock_id']))
+
+        # Update Bank and Portfolio
+        cursor.execute("""
+            UPDATE Bank_Account SET current_balance = current_balance + %s
+            WHERE bank_id = %s
+        """, (sale_value, bank_id))
+
+        cursor.execute("""
+            UPDATE User_portfolio SET total_value = total_value + %s
+            WHERE user_id = (SELECT user_id FROM Bank_Account WHERE bank_id = %s)
+        """, (sale_value, bank_id))
+
+        # Record transaction
+        cursor.execute("""
+            INSERT INTO Transaction (bank_id, date, amount)
+            VALUES (%s, %s, %s)
+        """, (bank_id, datetime.now(), sale_value))
+        transaction_id = cursor.lastrowid
+
+        conn.commit()
+        return {
+            "message": "Stock sold successfully",
+            "stock_ticker": stock_ticker,
+            "quantity_sold": quantity_to_sell,
+            "sale_value": sale_value,
+            "transaction_id": transaction_id
+        }, 200
+
+    except mysql.connector.Error as err:
+        conn.rollback()
+        return {"error": str(err)}, 500
+    finally:
+        cursor.close()
+        conn.close()
+
+def buy_stock_action(data):
+    stock_ticker = data.get('stock_ticker')
+    number_of_shares = int(data.get('number_of_shares', 0))
+    bank_ID = int(data.get('bank_ID', 0))
+
+    if not all([stock_ticker, number_of_shares, bank_ID]):
+        return {'error': 'Missing required fields'}, 400
+
+    try:
+        ticker = yf.Ticker(stock_ticker)
+        stock_current_price = ticker.history(period="1d")['Close'].iloc[-1]
+    except Exception as e:
+        return {"error": f"Failed to fetch stock price: {str(e)}"}, 500
+
+    total_cost = stock_current_price * number_of_shares
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        now = datetime.now()
+        cursor.execute("""
+            INSERT INTO Transaction (bank_ID, date, amount)
+            VALUES (%s, %s, %s)
+        """, (bank_ID, now, total_cost))
+        transaction_ID = cursor.lastrowid
+
+        cursor.execute("""
+            INSERT INTO Stocks (
+                transaction_ID, number_of_shares, purchase_price_per_share,
+                current_price_per_share, purchase_date, stock_ticker
+            ) VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            transaction_ID, number_of_shares, stock_current_price,
+            stock_current_price, now, stock_ticker
+        ))
+
+        cursor.execute("SELECT total_value FROM User_portfolio")
+        user_portfolio = cursor.fetchone()
+        if not user_portfolio:
+            return {"error": "User not found"}, 404
+
+        new_total_value = float(user_portfolio['total_value']) - float(total_cost)
+
+        cursor.execute("SELECT current_balance FROM Bank_Account WHERE bank_ID = %s", (bank_ID,))
+        bank_account = cursor.fetchone()
+        if not bank_account:
+            return {"error": "Bank account not found"}, 404
+        new_bank_balance = float(bank_account['current_balance']) - total_cost
+
+        if new_bank_balance < 0:
+            cursor.execute("SELECT bank_account_name FROM Bank_Account WHERE bank_id = %s", (bank_ID,))
+            error_bank_name = cursor.fetchone()
+            return {"error": f"Not enough cash in {error_bank_name['bank_account_name']}"}, 400
+
+        cursor.execute("""
+            UPDATE User_portfolio
+            SET total_value = %s, updated_at = %s
+        """, (new_total_value, now))
+
+        cursor.execute("""
+            UPDATE Bank_Account
+            SET current_balance = %s, bank_account_last_updated = %s
+            WHERE bank_ID = %s
+        """, (new_bank_balance, now, bank_ID))
+
+        conn.commit()
+        return {"message": "Stock purchased successfully"}, 200
+
+    except Exception as e:
+        conn.rollback()
+        return {'error': str(e)}, 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route("/api/stock_action", methods=["POST"])
+def stock_action():
+    data = request.get_json()
+    action = data.get("action", "").lower()
+
+    if action == "buy":
+        result = buy_stock_action(data)
+    elif action == "sell":
+        result = sell_stock_action(data)
+    elif action == "view":
+        result = view_stock_action(data)
+    else:
+        return jsonify({"error": "Invalid action"}), 400
+
+
+    if isinstance(result, tuple):
+        return jsonify(result[0]), result[1]
+    else:
+        return jsonify(result)
+
 @app.route("/api/bond_value_from_ticker/<string:ticker>", methods=["GET"])
 def get_bond_value_from_ticker(ticker):
     ticker = ticker.upper()
 
     try:
-        # Get number of bonds from query params
+       
         num_bonds = int(request.args.get("number_of_bonds", 0))
     except (TypeError, ValueError):
         num_bonds = 0
 
     try:
-        # Optional: purchase price per bond from query params
+       
         try:
             purchase_price = float(request.args.get("purchase_price_per_bond", 0))
         except (TypeError, ValueError):
             purchase_price = 0
 
-        # Fetch bond/ETF data from yfinance
+       
         bond = yf.Ticker(ticker)
         info = bond.info
 
         bond_name = info.get("shortName", "").replace("\n", "").strip()
         current_price = info.get("regularMarketPrice")
-        bond_yield = info.get("yield")  # This is annual distribution yield for ETFs
+        bond_yield = info.get("yield")  
 
         if bond_name and current_price:
             bond_values = {}
@@ -271,190 +428,8 @@ def get_bond_value_from_ticker(ticker):
         return jsonify({"ticker": ticker, "error": str(e)}), 500
 
 
-# API to allow the user to sell a stock of their choice
-@app.route("/api/sell_stock", methods=["POST"])
-def sell_stock():
-    data = request.get_json()
-    stock_ticker = data.get("stock_ticker", "").upper()
-    quantity_to_sell = int(data.get("number_of_shares", 0))
-    bank_id = int(data.get("bank_ID", 0))
-
-    if quantity_to_sell <= 0 or not stock_ticker or bank_id <= 0:
-        return jsonify({"error": "Invalid input"}), 400
-
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
-        # Get stock record from DB
-        cursor.execute("""
-            SELECT stock_id, number_of_shares, purchase_price_per_share, transaction_id
-            FROM Stocks
-            WHERE stock_ticker = %s
-        """, (stock_ticker,))
-        stock_row = cursor.fetchone()
-
-        if not stock_row:
-            return jsonify({"error": "Stock not found"}), 404
-        if stock_row['number_of_shares'] < quantity_to_sell:
-            return jsonify({"error": "Not enough shares to sell"}), 400
-
-        # Get current market price from yfinance
-        stock_data = yf.Ticker(stock_ticker)
-        current_price = stock_data.info.get("regularMarketPrice")
-        if not current_price:
-            return jsonify({"error": "Unable to fetch current stock price"}), 500
-
-        sale_value = quantity_to_sell * current_price
-
-        # Update or delete stock in DB
-        if stock_row['number_of_shares'] == quantity_to_sell:
-            cursor.execute("DELETE FROM Stocks WHERE stock_id = %s", (stock_row['stock_id'],))
-        else:
-            cursor.execute("""
-                UPDATE Stocks
-                SET number_of_shares = number_of_shares - %s
-                WHERE stock_id = %s
-            """, (quantity_to_sell, stock_row['stock_id']))
-
-        # Update bank account balance
-        cursor.execute("""
-            UPDATE Bank_Account
-            SET current_balance = current_balance + %s
-            WHERE bank_id = %s
-        """, (sale_value, bank_id))
-
-        # Update user portfolio total_value
-        cursor.execute("""
-            UPDATE User_portfolio
-            SET total_value = total_value + %s
-            WHERE user_id = (
-                SELECT user_id FROM Bank_Account WHERE bank_id = %s
-            )
-        """, (sale_value, bank_id))
-
-        # Insert into transaction table
-        cursor.execute("""
-            INSERT INTO Transaction (bank_id, date, amount)
-            VALUES (%s, %s, %s)
-        """, (bank_id, datetime.now()), sale_value)
-        transaction_id = cursor.lastrowid
-
-        conn.commit()
-
-        return jsonify({
-            "message": "Stock sold successfully",
-            "stock_ticker": stock_ticker,
-            "quantity_sold": quantity_to_sell,
-            "sale_value": sale_value,
-            "transaction_id": transaction_id
-        })
-
-    except mysql.connector.Error as err:
-        conn.rollback()
-        return jsonify({"error": str(err)}), 500
-    finally:
-        cursor.close()
-        conn.close()
-
-# API route for user to buy stocks
-@app.route('/api/buy_stock', methods=['POST'])
-def buy_stock():
-    data = request.get_json()
-    stock_ticker = data.get('stock_ticker')
-    number_of_shares = data.get('number_of_shares')
-    bank_ID = data.get('bank_ID')
-    if not all([stock_ticker, number_of_shares,  bank_ID]):
-        return jsonify({'error': 'Missing required fields'}), 400
-    try:
-        ticker = yf.Ticker(stock_ticker)
-        stock_current_price = ticker.history(period="1d")['Close'].iloc[-1]
-    except Exception as e:
-        return jsonify({"error": f"Failed to fetch stock price: {str(e)}"}), 500
-
-    total_cost = stock_current_price * number_of_shares
-
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
-        now = datetime.now()
-        cursor.execute("""
-            INSERT INTO Transaction (bank_ID, date, amount)
-            VALUES (%s, %s, %s)
-        """, (bank_ID, now, total_cost))
-        transaction_ID = cursor.lastrowid
-        
-        cursor.execute("""
-                INSERT INTO Stocks (
-                    transaction_ID,
-                    number_of_shares,
-                    purchase_price_per_share,
-                    current_price_per_share,
-                    purchase_date,
-                    stock_ticker
-                ) VALUES (%s, %s, %s, %s, %s, %s)
-            """, (
-                transaction_ID,
-                number_of_shares,
-                stock_current_price ,
-                stock_current_price ,
-                datetime.now(),
-                stock_ticker
-            ))
-
-        cursor.execute("SELECT total_value FROM User_portfolio")
-        user_portfolio = cursor.fetchone()
-
-        if not user_portfolio:
-            return jsonify({"error": "User not found"}), 404
-
-        new_total_value = float(user_portfolio['total_value']) - float(total_cost)
-
-        cursor.execute("SELECT current_balance FROM Bank_Account WHERE bank_ID = %s", (bank_ID,))
-        bank_account = cursor.fetchone()
-        if not bank_account:
-            return jsonify({"error": "Bank account not found"}), 404
-        new_bank_balance = float(bank_account['current_balance']) - total_cost
-        
-        if new_bank_balance < 0:
-            cursor.execute("""
-                SELECT bank_account_name
-                FROM Bank_Account
-                WHERE bank_id = %s
-            """, (bank_ID,))
-            error_bank_name = cursor.fetchone()
-            
-            return jsonify({
-                "error": f"Not enough cash in {error_bank_name['bank_account_name']}"
-            }), 404
-
-        cursor.execute("""
-            UPDATE User_portfolio
-            SET total_value = %s,
-                updated_at = %s
-        """, (new_total_value, now))
-        
-        cursor.execute("""
-            UPDATE Bank_Account
-            SET current_balance = %s,
-                bank_account_last_updated = %s
-            WHERE bank_ID = %s
-        """, (new_bank_balance, now, bank_ID))
-
-        conn.commit()
-        return jsonify({"message": "Stock purchase recorded, bank account and portfolio updated"}), 200
-
-    except Exception as e:
-        conn.rollback()
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        cursor.close()
-        conn.close()
 
 
-# API that allows a user to sell a bond of their choice
 @app.route("/api/sell_bond", methods=["POST"])
 def sell_bond():
     data = request.get_json()
@@ -469,7 +444,6 @@ def sell_bond():
     cursor = conn.cursor(dictionary=True)
 
     try:
-        # Get bond record from DB
         cursor.execute("""
             SELECT bond_ID, bond_name, bond_ticker, purchase_price_per_bond, bond_yield, 
                    number_of_bonds, dividend_frequency, transaction_ID
@@ -483,16 +457,16 @@ def sell_bond():
         if bond_row['number_of_bonds'] < quantity_to_sell:
             return jsonify({"error": "Not enough bonds to sell"}), 400
 
-        # Get current market price from yfinance
+        
         bond_data = yf.Ticker(bond_ticker)
         current_price = bond_data.info.get("regularMarketPrice", bond_row['purchase_price_per_bond'])
         if not current_price:
             return jsonify({"error": "Unable to fetch current bond price"}), 500
 
-        # Sale value (market value + accrued interest)
+      
         sale_value = round((quantity_to_sell * current_price), 2)
 
-        # Update or delete bond in DB
+       
         if bond_row['number_of_bonds'] == quantity_to_sell:
             cursor.execute("DELETE FROM Bonds WHERE bond_ID = %s", (bond_row['bond_ID'],))
         else:
@@ -502,14 +476,14 @@ def sell_bond():
                 WHERE bond_ID = %s
             """, (quantity_to_sell, bond_row['bond_ID']))
 
-        # Update bank account balance
+      
         cursor.execute("""
             UPDATE Bank_Account
             SET current_balance = current_balance + %s
             WHERE bank_id = %s
         """, (sale_value, bank_id))
 
-        # Update user portfolio total_value
+      
         cursor.execute("""
             UPDATE User_portfolio
             SET total_value = total_value + %s
@@ -518,7 +492,7 @@ def sell_bond():
             )
         """, (sale_value, bank_id))
 
-        # Insert into transaction table
+       
         cursor.execute("""
             INSERT INTO Transaction (bank_id, date)
             VALUES (%s, %s, %s)
@@ -567,7 +541,7 @@ def buy_bond():
 
         total_cost = round(current_price * number_of_bonds, 2)
 
-        # Check bank account
+      
         cursor.execute("""
             SELECT current_balance FROM Bank_Account
             WHERE bank_ID = %s
@@ -579,14 +553,14 @@ def buy_bond():
         if bank['current_balance'] < total_cost:
             return jsonify({"error": "Insufficient bank balance"}), 400
 
-        # Insert into Transaction table
+        
         cursor.execute("""
             INSERT INTO Transaction (bank_ID, date)
             VALUES (%s, %s, %s)
         """, (bank_id, datetime.now(), total_cost))
         transaction_id = cursor.lastrowid
 
-        # Insert into Bonds table
+   
         cursor.execute("""
             INSERT INTO Bonds (
                 bond_name, bond_ticker, purchase_price_per_bond, bond_yield,
@@ -603,14 +577,14 @@ def buy_bond():
             transaction_id
         ))
 
-        # Update bank balance
+       
         cursor.execute("""
             UPDATE Bank_Account
             SET current_balance = current_balance - %s
             WHERE bank_ID = %s
         """, (total_cost, bank_id))
 
-        # Update user portfolio
+       
         cursor.execute("""
             UPDATE User_portfolio
             SET total_value = total_value - %s
