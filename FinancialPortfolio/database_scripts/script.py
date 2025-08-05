@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS Transaction (
     transaction_ID INT PRIMARY KEY AUTO_INCREMENT,
     bank_ID INT,
     date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    amount DECIMAL(15, 2),
     FOREIGN KEY (bank_ID) REFERENCES Bank_Account(bank_ID)
 );
 """)

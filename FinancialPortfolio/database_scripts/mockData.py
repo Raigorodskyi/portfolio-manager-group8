@@ -57,21 +57,21 @@ for account in bank_accounts:
 
 # Transactions data
 transactions_data = [
-    {'bank_id': bank_ids[0], 'date': datetime.now() - timedelta(days=30)},  # Chase checking
-    {'bank_id': bank_ids[0], 'date': datetime.now() - timedelta(days=25)},
-    {'bank_id': bank_ids[1], 'date': datetime.now() - timedelta(days=45)},  # Wells Fargo savings
-    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=60)},  # Investment account
-    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=35)},
-    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=20)},
-    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=10)},
+    {'bank_id': bank_ids[0], 'date': datetime.now() - timedelta(days=30), 'amount': 150.00},  # Chase checking
+    {'bank_id': bank_ids[0], 'date': datetime.now() - timedelta(days=25), 'amount': 200.00},
+    {'bank_id': bank_ids[1], 'date': datetime.now() - timedelta(days=45), 'amount': 300.00},  # Wells Fargo savings
+    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=60), 'amount': 400.00},  # Investment account
+    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=35), 'amount': 500.00},
+    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=20), 'amount': 600.00},
+    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=10), 'amount': 700.00 },
 ]
 
 transaction_ids = []
 for trans in transactions_data:
     cursor.execute("""
-    INSERT INTO Transaction (bank_ID, date)
-    VALUES (%s, %s)
-    """, (trans['bank_id'], trans['date']))
+    INSERT INTO Transaction (bank_ID, date, amount)
+    VALUES (%s, %s, %s)
+    """, (trans['bank_id'], trans['date'], trans['amount']))
 
     transaction_ids.append(cursor.lastrowid)
 
