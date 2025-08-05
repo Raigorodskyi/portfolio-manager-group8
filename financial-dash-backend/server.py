@@ -216,6 +216,7 @@ def sell_stock_action(data):
     stock_ticker = data.get("stock_ticker", "").upper()
     quantity_to_sell = int(data.get("number_of_shares", 0))
     bank_id = int(data.get("bank_ID", 0))
+    purchase_price = float(data.get("purchase_price_per_share", 0))
 
     if quantity_to_sell <= 0 or not stock_ticker or bank_id <= 0:
         return {"error": "Invalid input"}, 400
@@ -227,8 +228,8 @@ def sell_stock_action(data):
         cursor.execute("""
             SELECT stock_id, number_of_shares, purchase_price_per_share
             FROM Stocks
-            WHERE stock_ticker = %s
-        """, (stock_ticker,))
+            WHERE stock_ticker = %s and purchase_price_per_share = %s
+        """, (stock_ticker, purchase_price))
         stock_row = cursor.fetchone()
 
         if not stock_row:
