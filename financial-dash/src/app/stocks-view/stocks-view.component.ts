@@ -2,10 +2,11 @@ import { Component, Inject, Input, OnInit, PLATFORM_ID } from '@angular/core';
 import { Stock } from '../stock';
 import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { PortfolioService } from '../services/portfolio.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-stocks-view',
-  imports: [CommonModule, CurrencyPipe],
+  imports: [CommonModule, CurrencyPipe, FormsModule],
   templateUrl: './stocks-view.component.html',
   styleUrl: './stocks-view.component.css'
 })
@@ -15,6 +16,7 @@ stockList: { ticker: string; data: Stock }[] = [];
 isBrowser: boolean = false;
 stocksValuation: number = 0;
 globalValue: number = 0;
+searchQuery: string = '';
 
 constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioService: PortfolioService) {
   this.isBrowser = isPlatformBrowser(platformId);
@@ -39,6 +41,15 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
 
     });
   }
+
+  get filteredStocks() {
+    const query = this.searchQuery.toLowerCase();
+    return this.stockList.filter(stock =>
+      stock.data.stock_name.toLowerCase().includes(query) ||
+      stock.ticker.toLowerCase().includes(query)
+    );
+  }
+
   getGainLoss(stock: Stock): number {
     return (stock.current_price - stock.purchase_price) * stock.shares;
   }  

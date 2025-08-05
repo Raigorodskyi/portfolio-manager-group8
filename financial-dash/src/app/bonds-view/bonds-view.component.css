@@ -105,7 +105,7 @@ body, .dashboard-container {
     grid-area: top;
     background: linear-gradient(to right, #d4c4f8, #d061f1);
     color: #222;
-    height: 150%;
+    height: 200%;
   }
   
   /* Card base styles */

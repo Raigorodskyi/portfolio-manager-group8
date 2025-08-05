@@ -47,10 +47,16 @@
 
       <div class="other-stocks-box">
         <h2>View Other Stocks</h2>
+      
         <div class="stock-search">
-          <input type="text" placeholder="Search by ticker or name" />
-          <button>Search</button>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            placeholder="Search by ticker or name"
+          />
+          <!-- <button>Search</button> -->
         </div>
+      
         <table>
           <thead>
             <tr>
@@ -61,7 +67,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let stock of stockList">
+            <tr *ngFor="let stock of filteredStocks">
               <td>{{ stock.ticker }}</td>
               <td>{{ stock.data.stock_name }}</td>
               <td>{{ stock.data.current_price | currency }}</td>
@@ -70,6 +76,6 @@
           </tbody>
         </table>
       </div>
-    </div>
+      
   </div>
   

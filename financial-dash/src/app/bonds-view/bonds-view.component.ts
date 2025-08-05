@@ -2,10 +2,11 @@ import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { Bond } from '../bond';
 import { PortfolioService } from '../services/portfolio.service';
 import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-bonds-view',
-  imports: [CommonModule, CurrencyPipe],
+  imports: [CommonModule, CurrencyPipe, FormsModule],
   templateUrl: './bonds-view.component.html',
   styleUrl: './bonds-view.component.css'
 })
@@ -14,6 +15,7 @@ bonds: Bond[] = [];
 isBrowser: boolean = false;
 bondValuation: number = 0;
 globalValue: number = 0;
+searchQuery: string = '';
 
 constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioService: PortfolioService) {
   this.isBrowser = isPlatformBrowser(platformId);
@@ -30,6 +32,14 @@ ngOnInit(): void {
       this.bondValuation = this.bonds.reduce((sum, bond) =>
         sum + bond['Current Market Price'] * bond['Number of Bonds'], 0);
     });
+}
+
+get filteredBonds() {
+  const query = this.searchQuery.toLowerCase();
+  return this.bonds.filter(bond =>
+    bond['Bond Name'].toLowerCase().includes(query) ||
+    bond['Bond Ticker'].toLowerCase().includes(query)
+  );
 }
 
 }

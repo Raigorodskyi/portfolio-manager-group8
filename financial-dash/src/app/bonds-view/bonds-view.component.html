@@ -20,7 +20,8 @@
     
       <div class="dashboard-grid">
         <div class="your-bonds-box">
-            <h2>Your Bonds</h2>            <table>
+            <h2>Your Bonds</h2>            
+            <table>
               <thead>
                 <tr>
                   <th>Bond Name</th>
@@ -47,8 +48,11 @@
         <div class="other-bonds-box">
           <h2>View Other Bonds</h2>
           <div class="bond-search">
-            <input type="text" placeholder="Search by ticker or name" />
-            <button>Search</button>
+            <input 
+            type="text" 
+            [(ngModel)]="searchQuery"
+            placeholder="Search by ticker or name" />
+            <!-- <button>Search</button> -->
           </div>
           <table>
             <thead>
@@ -59,7 +63,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let bond of bonds">
+              <tr *ngFor="let bond of filteredBonds">
                 <td>{{ bond['Bond Ticker'] }}</td>
                 <td>{{ bond['Bond Name'] }}</td>
                 <td>{{ bond['Current Market Price'] | currency }}</td>
