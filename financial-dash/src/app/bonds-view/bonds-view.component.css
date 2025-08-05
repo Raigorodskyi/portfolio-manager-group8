@@ -73,7 +73,8 @@ body, .dashboard-container {
     width: 60%;
     font-size: 1rem;
   }
-  
+
+  .other-bonds-box button,
   .bond-search button {
     padding: 8px 16px;
     background-color: #b12ab6;

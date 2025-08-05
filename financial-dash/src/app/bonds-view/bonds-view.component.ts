@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
-import { Bond } from '../bond';
+import { Bond, MarketBond } from '../bond';
 import { PortfolioService } from '../services/portfolio.service';
 import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class BondsViewComponent implements OnInit {
 bonds: Bond[] = [];
+marketBond: { ticker: string; data: MarketBond }[] = [];
 isBrowser: boolean = false;
 bondValuation: number = 0;
 globalValue: number = 0;
@@ -39,12 +40,16 @@ getBondDiff(bond: Bond): number {
               * bond['Number of Bonds'];
 }
 
-get filteredBonds() {
-  const query = this.searchQuery.toLowerCase();
-  return this.bonds.filter(bond =>
-    bond['Bond Name'].toLowerCase().includes(query) ||
-    bond['Bond Ticker'].toLowerCase().includes(query)
-  );
+getMarketBond() {
+  const query = this.searchQuery;
+
+  this.portfolioService.getBondByTicker(query).subscribe((bond) => {
+    this.marketBond = Object.entries(bond).map(([ticker, bond]) => ({
+      ticker,
+      data: bond
+    }))
+  });
+  console.log(this.marketBond, query);
 }
 
 }

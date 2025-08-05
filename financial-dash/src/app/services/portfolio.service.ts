@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { Bond } from '../bond';
+import { Bond, MarketBond } from '../bond';
 import { Stock } from '../stock';
 
 @Injectable({
@@ -11,7 +11,8 @@ export class PortfolioService {
   private cashValueUrl = 'http://127.0.0.1:5000/api/total_value';
   private stocksUrl = 'http://127.0.0.1:5000/api/stock_values';
   private bondsUrl = 'http://127.0.0.1:5000/api/bonds';
-  private getStockUrl = 'http://127.0.0.1:5000/api/stock_value_from_ticker/';
+  private getStockUrl = 'http://127.0.0.1:5000/api/stock_action';
+  private getBondUrl = 'http://127.0.0.1:5000/api/bond_action';
 
   constructor(private http: HttpClient) {}
 
@@ -29,7 +30,19 @@ export class PortfolioService {
   }
 
   getStockByTicker(ticker: string): Observable<{ [ticker: string]: Stock }> {
-    console.log(this.getStockUrl + ticker);
-    return this.http.get<{ [ticker: string]: Stock }>(this.getStockUrl + ticker);
+    const payload = {
+      action: 'view',
+      stock_ticker: ticker
+    };
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+  
+    return this.http.post<{ [ticker: string]: Stock }>(this.getStockUrl, payload, { headers });
+  }
+
+  getBondByTicker(ticker: string):  Observable<{ [ticker: string]: MarketBond }> {
+    console.log(this.getBondUrl + ticker);
+    return this.http.get<{ [ticker: string]: MarketBond }>(this.getBondUrl + ticker);
   }
 }

@@ -3,4 +3,5 @@ export interface Stock {
     purchase_price: number;
     shares: number;
     stock_name: string;
+    stock_ticker: string;
   }

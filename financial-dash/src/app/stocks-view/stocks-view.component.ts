@@ -18,6 +18,10 @@ isBrowser: boolean = false;
 stocksValuation: number = 0;
 globalValue: number = 0;
 searchQuery: string = '';
+showModal = false;
+modalType: 'buy' | 'sell' = 'buy';
+selectedStock: any = null;
+modalQuantity: number = 1;
 
 constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioService: PortfolioService) {
   this.isBrowser = isPlatformBrowser(platformId);
@@ -52,11 +56,41 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
         data: stock
       }))
     });
-    console.log(this.marketStocks, query);
+    console.log(this.marketStocks);
   }
 
   getGainLoss(stock: Stock): number {
     return (stock.current_price - stock.purchase_price) * stock.shares;
   }  
+
+
+  openModal(type: 'buy' | 'sell', stock: any) {
+    this.modalType = type;
+    this.selectedStock = stock;
+    this.modalQuantity = 1;
+    this.showModal = true;
+  }
+  
+  closeModal() {
+    this.showModal = false;
+  }
+  
+  confirmTransaction() {
+    if (!this.selectedStock || !this.modalQuantity) return;
+  
+    const total = this.selectedStock.data.current_price * this.modalQuantity;
+  
+    if (this.modalType === 'buy') {
+      console.log(`Buying ${this.modalQuantity} of ${this.selectedStock.ticker} for ${total}`);
+      // TODO: Add buy logic
+    } else {
+      console.log(`Selling ${this.modalQuantity} of ${this.selectedStock.ticker} for ${total}`);
+      // TODO: Add sell logic
+    }
+  
+    this.closeModal();
+  }
+
+  
   }
 

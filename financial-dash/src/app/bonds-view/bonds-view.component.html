@@ -61,7 +61,7 @@
             type="text" 
             [(ngModel)]="searchQuery"
             placeholder="Search by ticker or name" />
-            <!-- <button>Search</button> -->
+            <button (click)="this.getMarketBond()">Search</button>
           </div>
           <table>
             <thead>
@@ -72,10 +72,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let bond of filteredBonds">
-                <td>{{ bond['Bond Ticker'] }}</td>
-                <td>{{ bond['Bond Name'] }}</td>
-                <td>{{ bond['Current Market Price (from YFinance)'] | currency }}</td>
+              <tr *ngFor="let bond of marketBond">
+                <td>{{ bond.ticker }}</td>
+                <td>{{ bond.data.bond_name }}</td>
+                <td>{{ bond.data.current_price | currency }}</td>
+                <button>Buy</button>
               </tr>
             </tbody>
           </table>

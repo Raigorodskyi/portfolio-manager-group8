@@ -47,6 +47,7 @@
                   </span>
                 </span>
               </td>
+              <button (click)="openModal('sell', stock)">Sell</button>
             </tr>
           </tbody>
         </table>
@@ -77,6 +78,7 @@
               <td>{{ stock.ticker }}</td>
               <td>{{ stock.data.stock_name }}</td>
               <td>{{ stock.data.current_price | currency }}</td>
+              <button (click)="openModal('buy', stock)">Buy</button>
             </tr>
           </tbody>
         </table>
@@ -84,3 +86,23 @@
       
   </div>
   
+
+<!--<Buy/Sell Modal -->
+  <div class="modal-backdrop" *ngIf="showModal">
+    <div class="modal">
+      <h2>{{ modalType === 'buy' ? 'Buy' : 'Sell' }} {{ selectedStock?.ticker }}</h2>
+      
+      <label>Quantity:</label>
+      <input type="number" [(ngModel)]="modalQuantity" min="1" />
+  
+      <p *ngIf="modalQuantity && selectedStock">
+        Total {{ modalType === 'buy' ? 'Cost' : 'Return' }}:
+        {{ (selectedStock.data.current_price * modalQuantity) | currency }}
+      </p>
+  
+      <div class="modal-actions">
+        <button (click)="confirmTransaction()">Confirm</button>
+        <button (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>

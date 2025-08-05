@@ -66,6 +66,7 @@ body, .dashboard-container {
     gap: 10px;
   }
   
+  .modal input,
   .stock-search input {
     padding: 8px 12px;
     border-radius: 8px;
@@ -73,7 +74,14 @@ body, .dashboard-container {
     width: 60%;
     font-size: 1rem;
   }
-  
+
+  .modal input {
+    margin-left: 10px;
+  }
+
+  .modal button,
+  .other-stocks-box button,
+  .your-stocks-box button,
   .stock-search button {
     padding: 8px 16px;
     background-color: #5e2ca5;
@@ -84,6 +92,8 @@ body, .dashboard-container {
     font-weight: bold;
   }
   
+  .other-stocks-box button,
+  .your-stocks-box button,
   .stock-search button:hover {
     background-color: #7e4bc3;
   }  
@@ -209,19 +219,6 @@ body, .dashboard-container {
     align-items: center;
   }
   
-  .view-button {
-    background-color: #461c6d; 
-    color: white;
-    width: 100px;
-    height: 30px;
-    border: none;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
   .your-stocks-box,
   .your-bonds-box {
     position: relative; /* Needed for absolute positioning inside */
@@ -241,18 +238,11 @@ body, .dashboard-container {
   .your-stocks-box h3 {
     margin-top: 0;
   }
-  .view-button:hover {
-    background-color: #991d8f; /* Tailwind blue-600 */
-  }
   
   tr:last-child td {
     border-bottom: none;
   }
-
-
-
-
-
+  
   .dashboard-header {
     display: flex;
     flex-direction: column;
@@ -305,6 +295,35 @@ body, .dashboard-container {
     font-size: 1.8rem;
     font-weight: bold;
   }
+
+
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal {
+    background: rgb(143, 76, 187);
+    padding: 20px;
+    border-radius: 8px;
+    min-width: 300px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+  
+  .modal-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
   
   
   /* Responsive fallback */

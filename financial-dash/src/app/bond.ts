@@ -6,3 +6,11 @@ export interface Bond {
   'Number of Bonds': number;
   'Purchase Price per Bond': number;
 }
+
+export interface MarketBond {
+  bond_name: string;
+  bond_yield: number;
+  current_price: number;
+  number_of_bonds: number;
+  purchase_price_per_bond: number;
+}

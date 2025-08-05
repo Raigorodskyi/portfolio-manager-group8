@@ -89,6 +89,7 @@ ngOnInit(): void {
 
         // Global portfolio value
         this.globalValue = this.cash + bondsTotal + stocksTotal;
+        console.log(this.globalValue, this.cash, bondsTotal, stocksTotal);
         this.previousGlobalValue = this.cash + prevBondsTotal + prevStocksTotal;
         if(isPlatformBrowser(this.platformId)) {
           localStorage.setItem('globalValue', this.globalValue.toString());
