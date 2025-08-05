@@ -191,6 +191,7 @@ def get_stock_value_from_ticker(ticker):
     except Exception as e:
         return jsonify({"ticker": ticker, "error": str(e)}), 500
     
+    
 # API that verifies and fetches data for a specific bond ticker through yfinance
 @app.route("/api/bond_value_from_ticker/<string:ticker>", methods=["GET"])
 def get_bond_value_from_ticker(ticker):
@@ -454,30 +455,8 @@ def sell_bond():
         if not current_price:
             return jsonify({"error": "Unable to fetch current bond price"}), 500
 
-        # Calculate coupons per year
-        freq_map = {
-            "Annual": 1,
-            "Semi-Annual": 2,
-            "Quarterly": 4,
-            "Monthly": 12
-        }
-        coupons_per_year = freq_map.get(bond_row['dividend_frequency'], 1)
-
-        # Approximate days since last coupon
-        # (Here we just assume equal spacing between coupon dates)
-        days_in_period = 365 / coupons_per_year
-        days_since_last_coupon = days_in_period / 2  # <-- Approximation, can replace with real data
-
-        # Calculate accrued interest
-        accrued_interest_per_bond = round(
-            float(bond_row['purchase_price_per_bond']) *
-            (float(bond_row['bond_yield']) / 100 / coupons_per_year) *
-            (days_since_last_coupon / days_in_period), 2
-        )
-        total_accrued_interest = round(accrued_interest_per_bond * quantity_to_sell, 2)
-
         # Sale value (market value + accrued interest)
-        sale_value = round((quantity_to_sell * current_price) + total_accrued_interest, 2)
+        sale_value = round((quantity_to_sell * current_price), 2)
 
         # Update or delete bond in DB
         if bond_row['number_of_bonds'] == quantity_to_sell:
@@ -519,7 +498,6 @@ def sell_bond():
             "bond_ticker": bond_ticker,
             "quantity_sold": quantity_to_sell,
             "market_value": quantity_to_sell * current_price,
-            "accrued_interest": total_accrued_interest,
             "sale_value": sale_value,
             "transaction_id": transaction_id
         })
