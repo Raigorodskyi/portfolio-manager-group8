@@ -73,7 +73,7 @@ cursor.execute("""
 CREATE TABLE IF NOT EXISTS Stocks (
     stock_ID INT PRIMARY KEY AUTO_INCREMENT,
     transaction_ID INT,
-    updated_at_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     number_of_shares INT,
     purchase_price_per_share DECIMAL(10, 2),
     current_price_per_share DECIMAL(10, 2),
@@ -88,12 +88,13 @@ cursor.execute("""
 CREATE TABLE IF NOT EXISTS Bonds (
     bond_ID INT PRIMARY KEY AUTO_INCREMENT,
     bond_name VARCHAR(100),
-    bond_ticker VARCHAR (100),
-    bond_current_price DECIMAL(15, 2),
-    coupon_rate DECIMAL(5, 2),
-    number_of_bonds INT,
-    maturity_date DATE,
-    transaction_ID INT,
+    bond_ticker VARCHAR(100),         
+    purchase_price_per_bond DECIMAL(15,2),  
+    bond_yield DECIMAL(5,2),           
+    number_of_bonds INT,               
+    dividend_frequency VARCHAR(20),    
+    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    transaction_ID INT,                       
     FOREIGN KEY (transaction_ID) REFERENCES Transaction(transaction_ID)
 );
 """)

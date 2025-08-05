@@ -129,34 +129,42 @@ for stock in stocks_data:
 # Bonds data
 bonds_data = [
     {
-        'transaction_id': transaction_ids[2],  # Savings account transaction
-        'name': ' iShares iBoxx $ Investment Grade Corporate Bond ETF',
+        'transaction_id': transaction_ids[2],
+        'name': 'iShares iBoxx $ Investment Grade Corporate Bond ETF',
         'ticker': 'LQD',
-        'price_per_bond': 1000.00,
-        'coupon_rate': 4.25,
+        'purchase_price_per_bond': 52.64,
+        'bond_yield': 4.25,
         'num_bonds': 10,
-        'maturity_date': date.today() + timedelta(days=3650)  
+        'dividend_frequency': 'Monthly'
     },
     {
-        'transaction_id': transaction_ids[3],  # Investment account transaction
+        'transaction_id': transaction_ids[3],
         'name': 'iShares 1-3 Year Treasury Bond ETF',
         'ticker': 'SHY',
-        'price_per_bond': 1000.00,
-        'coupon_rate': 3.85,
+        'purchase_price_per_bond': 70.12,
+        'bond_yield': 3.85,
         'num_bonds': 5,
-        'maturity_date': date.today() + timedelta(days=1095)  
+        'dividend_frequency': 'Monthly'
     }
 ]
 
 for bond in bonds_data:
     cursor.execute("""
-    INSERT INTO Bonds (bond_name, bond_current_price, coupon_rate, number_of_bonds, 
-                      maturity_date, transaction_ID, bond_ticker)
-    VALUES (%s, %s, %s, %s, %s, %s, %s)
-    """, (bond['name'], bond['price_per_bond'], bond['coupon_rate'],
-          bond['num_bonds'], bond['maturity_date'], bond['transaction_id'], bond['ticker']))
+    INSERT INTO Bonds (bond_name, bond_ticker, purchase_price_per_bond, bond_yield, 
+                       number_of_bonds, dividend_frequency, last_updated, transaction_ID)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    """, (
+        bond['name'],
+        bond['ticker'],
+        bond['purchase_price_per_bond'],
+        bond['bond_yield'],
+        bond['num_bonds'],
+        bond['dividend_frequency'],
+        datetime.now(),
+        bond['transaction_id']
+    ))
 
-# Commit all changes
+# Commit changes
 conn.commit()
 
 # Display summary of inserted data
