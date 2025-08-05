@@ -183,7 +183,7 @@ print(f"Bond positions: {len(bonds_data)} total")
 
 # Calculate total stock value
 total_stock_value = sum(stock['shares'] * stock['current_price'] for stock in stocks_data)
-total_bond_value = sum(bond['purchase_price_per_bond'] * bond['number_of_bonds'] for bond in bonds_data)
+total_bond_value = sum(bond['purchase_price_per_bond'] * bond['num_bonds'] for bond in bonds_data)
 total_cash = sum(account['balance'] for account in bank_accounts)
 
 print(f"\nPortfolio Breakdown:")
