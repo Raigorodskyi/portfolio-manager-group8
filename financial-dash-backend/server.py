@@ -157,6 +157,7 @@ def get_bank_accounts():
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
     
+    
 # API that verifies and fetches data for a specific stock ticker through yfinance
 @app.route("/api/stock_value_from_ticker/<string:ticker>", methods=["GET"])
 def get_stock_value_from_ticker(ticker):
@@ -190,6 +191,50 @@ def get_stock_value_from_ticker(ticker):
     except Exception as e:
         return jsonify({"ticker": ticker, "error": str(e)}), 500
     
+# API that verifies and fetches data for a specific bond ticker through yfinance
+@app.route("/api/bond_value_from_ticker/<string:ticker>", methods=["GET"])
+def get_bond_value_from_ticker(ticker):
+    ticker = ticker.upper()
+
+    try:
+        # Get number of bonds from query params
+        num_bonds = int(request.args.get("number_of_bonds", 0))
+    except (TypeError, ValueError):
+        num_bonds = 0
+
+    try:
+        # Optional: purchase price per bond from query params
+        try:
+            purchase_price = float(request.args.get("purchase_price_per_bond", 0))
+        except (TypeError, ValueError):
+            purchase_price = 0
+
+        # Fetch bond/ETF data from yfinance
+        bond = yf.Ticker(ticker)
+        info = bond.info
+
+        bond_name = info.get("shortName", "").replace("\n", "").strip()
+        current_price = info.get("regularMarketPrice")
+        bond_yield = info.get("yield")  # This is annual distribution yield for ETFs
+
+        if bond_name and current_price:
+            bond_values = {}
+            bond_values[ticker] = {
+                'bond_name': bond_name,
+                'number_of_bonds': num_bonds,
+                'purchase_price_per_bond': purchase_price,
+                'current_price': round(float(current_price), 2),
+                'bond_yield': round(float(bond_yield), 2) if bond_yield else None
+            }
+            return jsonify(bond_values)
+        else:
+            return jsonify({
+                "ticker": ticker,
+                "error": "Could not fetch bond data"
+            }), 404
+    except Exception as e:
+        return jsonify({"ticker": ticker, "error": str(e)}), 500
+
 
 # API to allow the user to sell a stock of their choice
 @app.route("/api/sell_stock", methods=["POST"])
