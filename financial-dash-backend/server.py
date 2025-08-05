@@ -92,7 +92,7 @@ def get_all_bonds():
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT bond_name,bond_ticker , maturity_date, bond_current_price, number_of_bonds
+            SELECT bond_name, bond_ticker, purchase_price_per_bond, bond_yield, number_of_bonds
             FROM Bonds
         """)
         bonds = cursor.fetchall()
@@ -113,19 +113,21 @@ def get_all_bonds():
 
             result.append({
                 "Bond Name": bond['bond_name'],
-                "Maturity Date": str(bond['maturity_date']),
-                "Bond Ticker" : bond['bond_ticker'],
-                "Bond Amount (Purchase Price)": float(bond['bond_current_price']),
+                "Bond Ticker": bond['bond_ticker'],
+                "Purchase Price per Bond": float(bond['purchase_price_per_bond']),
+                "Bond Yield (%)": float(bond['bond_yield']),
                 "Number of Bonds": bond['number_of_bonds'],
-                "Current Market Price": round(float(current_price), 2) if current_price else "Unavailable"
+                "Current Market Price (from YFinance)": round(float(current_price), 2) if current_price else "Unavailable"
             })
 
         cursor.close()
         conn.close()
-    except mysql.connector.Error as err:
-            return jsonify({"error": str(err)}), 500
 
-    return jsonify(result)
+        return jsonify(result)
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+
 
 # API route that fetches all the user's bank accounts and related data
 @app.route("/api/bank_accounts", methods=["GET"])
