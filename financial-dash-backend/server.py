@@ -187,21 +187,11 @@ def get_bank_accounts():
 
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
-    
+
+# Function that handles user's action to view a stock
 def view_stock_action(data):
     ticker = data.get("stock_ticker", "").upper()
     shares = int(data.get("number_of_shares", 0))
-
-        
-# API that verifies and fetches data for a specific stock ticker through yfinance
-@app.route("/api/stock_value_from_ticker/<string:ticker>", methods=["GET"])
-def get_stock_value_from_ticker(ticker):
-    ticker = ticker.upper()
-
-    try:
-        shares = int(request.args.get("shares", 0))
-    except (TypeError, ValueError):
-        shares = 0
 
     try:
         stock = yf.Ticker(ticker)
@@ -221,14 +211,8 @@ def get_stock_value_from_ticker(ticker):
     except Exception as e:
         return {"error": str(e)}, 500
 
+# Function that handles a user's request to sell a stock
 def sell_stock_action(data):
-        return jsonify({"ticker": ticker, "error": str(e)}), 500
-
-
-# API to allow the user to sell a stock of their choice
-@app.route("/api/sell_stock", methods=["POST"])
-def sell_stock():
-    data = request.get_json()
     stock_ticker = data.get("stock_ticker", "").upper()
     quantity_to_sell = int(data.get("number_of_shares", 0))
     bank_id = int(data.get("bank_ID", 0))
@@ -302,12 +286,8 @@ def sell_stock():
         cursor.close()
         conn.close()
 
+# Function that handles a user's request to buy a stock
 def buy_stock_action(data):
-
-# API route for user to buy stocks
-@app.route('/api/buy_stock', methods=['POST'])
-def buy_stock():
-    data = request.get_json()
     stock_ticker = data.get('stock_ticker')
     number_of_shares = int(data.get('number_of_shares', 0))
     bank_ID = int(data.get('bank_ID', 0))
@@ -382,6 +362,7 @@ def buy_stock():
         cursor.close()
         conn.close()
 
+# API route that lets a user either buy/sell/view a stock based on action 
 @app.route("/api/stock_action", methods=["POST"])
 def stock_action():
     data = request.get_json()
@@ -401,29 +382,8 @@ def stock_action():
     else:
         return jsonify(result)
 
-# API route that deals with bond actions where an action can be either buying, selling, or viewing a bond
-@app.route("/api/bond_action", methods=["POST"])
-def bond_action():
-    data = request.get_json()
-    action = data['action']
-    ticker = data['bond_ticker']
-    quantity = data['number_of_bonds']
-    bank_id = data['bank_ID']
-    
-    if action == 'buy':
-        return buy_bond(ticker, quantity, bank_id)
-    elif action == 'sell':
-        return sell_bond(ticker, quantity, bank_id)
-    elif action == 'view':
-        return view_bond(ticker)
-    else:
-        return jsonify({
-                "ticker": ticker,
-                "error": "Invalid action: must be one of 'buy', 'sell', or 'view'"
-            }), 400
-
 # Function that processes a user's sell request
-def sell_bond(bond_ticker, quantity_to_sell, bank_id):
+def sell_bond(bond_ticker, quantity_to_sell, bank_id, purchase_price):
     if quantity_to_sell <= 0 or not bond_ticker or bank_id <= 0:
         return jsonify({"error": "Invalid input"}), 400
 
@@ -435,8 +395,8 @@ def sell_bond(bond_ticker, quantity_to_sell, bank_id):
             SELECT bond_ID, bond_name, bond_ticker, purchase_price_per_bond, bond_yield, 
                    number_of_bonds, dividend_frequency, transaction_ID
             FROM Bonds
-            WHERE bond_ticker = %s
-        """, (bond_ticker,))
+            WHERE bond_ticker = %s and purchase_price_per_bond = %s
+        """, (bond_ticker, purchase_price))
         bond_row = cursor.fetchone()
 
         if not bond_row:
@@ -475,7 +435,7 @@ def sell_bond(bond_ticker, quantity_to_sell, bank_id):
         """, (sale_value, bank_id))
 
         cursor.execute("""
-            INSERT INTO Transaction (bank_id, date)
+            INSERT INTO Transaction (bank_id, date, amount)
             VALUES (%s, %s, %s)
         """, (bank_id, datetime.now(), sale_value))
         transaction_id = cursor.lastrowid
@@ -499,13 +459,7 @@ def sell_bond(bond_ticker, quantity_to_sell, bank_id):
         conn.close()
         
 # Function that processes a user buy request for a bond
-@app.route("/api/buy_bond", methods=["POST"])
-def buy_bond():
-    data = request.get_json()
-    bond_ticker = data.get("bond_ticker", "").upper()
-    number_of_bonds = int(data.get("number_of_bonds", 0))
-    bank_id = int(data.get("bank_ID", 0))
-
+def buy_bond(bond_ticker, number_of_bonds, bank_id):
     if not bond_ticker or number_of_bonds <= 0 or bank_id <= 0:
         return jsonify({"error": "Invalid input"}), 400
 
@@ -534,7 +488,6 @@ def buy_bond():
             return jsonify({"error": "Bank account not found"}), 404
         if bank['current_balance'] < total_cost:
             return jsonify({"error": "Insufficient bank balance"}), 400
-
         
         cursor.execute("""
             INSERT INTO Transaction (bank_ID, date, amount)
@@ -542,7 +495,6 @@ def buy_bond():
         """, (bank_id, datetime.now(), total_cost))
         transaction_id = cursor.lastrowid
 
-   
         cursor.execute("""
             INSERT INTO Bonds (
                 bond_name, bond_ticker, purchase_price_per_bond, bond_yield,
@@ -593,25 +545,22 @@ def view_bond(ticker):
     ticker = ticker.upper()
 
     try:
-        # Get number of bonds from query params
         num_bonds = int(request.args.get("number_of_bonds", 0))
     except (TypeError, ValueError):
         num_bonds = 0
 
-    try:
-        # Optional: purchase price per bond from query params
+    try:       
         try:
             purchase_price = float(request.args.get("purchase_price_per_bond", 0))
         except (TypeError, ValueError):
             purchase_price = 0
-
-        # Fetch bond/ETF data from yfinance
+       
         bond = yf.Ticker(ticker)
         info = bond.info
 
         bond_name = info.get("shortName", "").replace("\n", "").strip()
         current_price = info.get("regularMarketPrice")
-        bond_yield = info.get("yield")  # This is annual distribution yield for ETFs
+        bond_yield = info.get("yield")  
 
         if bond_name and current_price:
             bond_values = {}
@@ -630,7 +579,28 @@ def view_bond(ticker):
             }), 404
     except Exception as e:
         return jsonify({"ticker": ticker, "error": str(e)}), 500
+    
+# API route that deals with bond actions where an action can be either buying, selling, or viewing a bond
+@app.route("/api/bond_action", methods=["POST"])
+def bond_action():
+    data = request.get_json()
+    action = data['action']
+    ticker = data['bond_ticker']
+    quantity = data['number_of_bonds']
+    bank_id = data['bank_ID']
+    purchase_price = data['purchase_price_per_bond']
+    
+    if action == 'buy':
+        return buy_bond(ticker, quantity, bank_id)
+    elif action == 'sell':
+        return sell_bond(ticker, quantity, bank_id, purchase_price)
+    elif action == 'view':
+        return view_bond(ticker)
+    else:
+        return jsonify({
+                "ticker": ticker,
+                "error": "Invalid action: must be one of 'buy', 'sell', or 'view'"
+            }), 400
 
- 
 if __name__ == "__main__":
     app.run(debug=True)
