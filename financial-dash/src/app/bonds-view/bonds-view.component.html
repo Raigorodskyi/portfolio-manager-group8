@@ -25,21 +25,30 @@
               <thead>
                 <tr>
                   <th>Bond Name</th>
-                  <th>Purchase Cost</th>
                   <th>Bond Ticker</th>
+                  <th>Purchase Price</th>
+                  <th>Bond Yield</th>
                   <th>Current Market Price</th>
-                  <th>Maturity Date</th>
                   <th>Number of Bonds</th>
+                  <th>Difference</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let bond of bonds">
                   <td>{{ bond['Bond Name'] }}</td>
-                  <td>{{ bond['Bond Amount (Purchase Price)'] | currency }}</td>
                   <td>{{ bond['Bond Ticker'] }}</td>
-                  <td>{{ bond['Current Market Price'] | currency }}</td>
-                  <td>{{ bond['Maturity Date'] }}</td>
+                  <td>{{ bond['Purchase Price per Bond'] | currency }}</td>
+                  <td>{{ bond['Bond Yield (%)'] }}</td>
+                  <td>{{ bond['Current Market Price (from YFinance)'] | currency }}</td>
                   <td>{{ bond['Number of Bonds'] }}</td>
+                  <td>
+                    <span [ngClass]="getBondDiff(bond) >= 0 ? 'gain' : 'loss'" class="gain-loss-cell">
+                      {{ getBondDiff(bond) | currency }}
+                      <span class="material-symbols-outlined">
+                        {{ getBondDiff(bond) >= 0 ? 'trending_up' : 'trending_down' }}
+                      </span>
+                    </span>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -66,7 +75,7 @@
               <tr *ngFor="let bond of filteredBonds">
                 <td>{{ bond['Bond Ticker'] }}</td>
                 <td>{{ bond['Bond Name'] }}</td>
-                <td>{{ bond['Current Market Price'] | currency }}</td>
+                <td>{{ bond['Current Market Price (from YFinance)'] | currency }}</td>
               </tr>
             </tbody>
           </table>

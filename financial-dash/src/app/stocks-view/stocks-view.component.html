@@ -39,7 +39,14 @@
               <td>{{ stock.data.shares }}</td>
               <td>{{ stock.data.purchase_price | currency }}</td>
               <td>{{ stock.data.current_price | currency }}</td>
-              <td>{{ getGainLoss(stock.data) | currency }}</td>
+              <td>
+                <span [ngClass]="getGainLoss(stock.data) >= 0 ? 'gain' : 'loss'" class="gain-loss-cell">
+                  {{ getGainLoss(stock.data) | currency }}
+                  <span class="material-symbols-outlined">
+                    {{ getGainLoss(stock.data) >= 0 ? 'trending_up' : 'trending_down' }}
+                  </span>
+                </span>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -54,7 +61,7 @@
             [(ngModel)]="searchQuery"
             placeholder="Search by ticker or name"
           />
-          <!-- <button>Search</button> -->
+          <button (click)="this.getMarketStock()">Search</button>
         </div>
       
         <table>
@@ -63,15 +70,13 @@
               <th>Ticker</th>
               <th>Name</th>
               <th>Current Price</th>
-              <th>Difference</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let stock of filteredStocks">
+            <tr *ngFor="let stock of marketStocks">
               <td>{{ stock.ticker }}</td>
               <td>{{ stock.data.stock_name }}</td>
               <td>{{ stock.data.current_price | currency }}</td>
-              <td>{{ getGainLoss(stock.data) | currency }}</td>
             </tr>
           </tbody>
         </table>

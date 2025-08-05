@@ -30,8 +30,13 @@ ngOnInit(): void {
       this.bonds = bondsData;
 
       this.bondValuation = this.bonds.reduce((sum, bond) =>
-        sum + bond['Current Market Price'] * bond['Number of Bonds'], 0);
+        sum + bond['Current Market Price (from YFinance)']* bond['Number of Bonds'], 0);
     });
+}
+
+getBondDiff(bond: Bond): number {
+  return (bond['Current Market Price (from YFinance)'] - bond['Purchase Price per Bond']) 
+              * bond['Number of Bonds'];
 }
 
 get filteredBonds() {
