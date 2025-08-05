@@ -11,8 +11,9 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './stocks-view.component.css'
 })
 export class StocksViewComponent implements OnInit {
+marketStockValues: { [ticker: string]: Stock } = {};
+marketStockList: {current_price: number, stock_name: string, stock_ticker: string}[] = [];
 stockValues: { [ticker: string]: Stock } = {};
-marketStocks: { ticker: string; data: Stock }[] = [];
 stockList: { ticker: string; data: Stock }[] = [];
 isBrowser: boolean = false;
 stocksValuation: number = 0;
@@ -37,7 +38,7 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
         ticker,
         data: stock
       }));
-  
+  console.log(this.stockList);
       // Calculate stocks total dynamically
       this.stocksValuation = this.stockList.reduce(
         (sum, stock) => sum + stock.data.current_price * stock.data.shares,
@@ -49,14 +50,22 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
 
   getMarketStock() {
     const query = this.searchQuery.toUpperCase();
-
-    this.portfolioService.getStockByTicker(query).subscribe((stock) => {
-      this.marketStocks = Object.entries(stock).map(([ticker, stock]) => ({
-        ticker,
-        data: stock
-      }))
+    this.portfolioService.getStockByTicker(query).subscribe((stockData) => {
+      this.marketStockValues = stockData;
+      console.log(this.marketStockValues);
+      // this.marketStockList ={
+      //   current_price: this.marketStockValues['current_price'],
+      //   stock_name: "Apple Inc.",
+      //   stock_ticker: "AAPL"
+      // };
+  
+      // Calculate stocks total dynamically
+      this.stocksValuation = this.stockList.reduce(
+        (sum, stock) => sum + stock.data.current_price * stock.data.shares,
+        0
+      );
+      console.log(this.marketStockList);
     });
-    console.log(this.marketStocks);
   }
 
   getGainLoss(stock: Stock): number {

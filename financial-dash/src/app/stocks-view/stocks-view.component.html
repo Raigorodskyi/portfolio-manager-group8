@@ -74,11 +74,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let stock of marketStocks">
-              <td>{{ stock.ticker }}</td>
-              <td>{{ stock.data.stock_name }}</td>
-              <td>{{ stock.data.current_price | currency }}</td>
-              <button (click)="openModal('buy', stock)">Buy</button>
+            <tr *ngIf="marketStockValues">
+              <td>{{ marketStockValues['stock_ticker'] }}</td>
+              <td>{{ marketStockValues['stock_name'] }}</td>
+              <td>{{ marketStockValues['current_price']  }}</td>
+              <button (click)="openModal('buy', marketStockValues)">Buy</button>
             </tr>
           </tbody>
         </table>
