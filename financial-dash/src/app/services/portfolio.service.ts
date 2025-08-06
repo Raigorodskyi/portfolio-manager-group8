@@ -29,7 +29,7 @@ export class PortfolioService {
     return this.http.get<{ [ticker: string]: Stock }>(this.stocksUrl);
   }
 
-  getStockByTicker(ticker: string): Observable<{ [ticker: string]: Stock }> {
+   getStockByTicker(ticker: string): Observable<{ stock: Stock }> {
     const payload = {
       action: 'view',
       stock_ticker: ticker
@@ -38,7 +38,7 @@ export class PortfolioService {
       'Content-Type': 'application/json'
     });
   
-    return this.http.post<{ [ticker: string]: Stock }>(this.getStockUrl, payload, { headers });
+    return this.http.post<{ stock: Stock  }>(this.getStockUrl, payload, { headers });
   }
 
   getBondByTicker(ticker: string):  Observable<{ [ticker: string]: MarketBond }> {
