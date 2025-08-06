@@ -1,1 +1,45 @@
-<p>profile works!</p>
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1><a href="#">My Portfolio</a></h1>
+
+    <nav>
+      <a routerLink="/stocks">Stocks</a>
+      <a routerLink="/bonds">Bonds</a>
+      <a routerLink="/profile">Profile</a>
+      <a href="#" class="active">Overview</a>
+    </nav>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="profile-container">
+      <h2>Your Bank Accounts</h2>
+      <ul class="bank-list">
+        <li *ngFor="let account of bankAccounts; let i = index">
+          <button (click)="selectBankAccount(i + 1)">
+            {{ account.bank_account_name }} - {{ account.bank_account_type }}
+          </button>
+        </li>
+      </ul>
+
+      <div *ngIf="transactions.length > 0">
+        <h3>Transactions</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tx of transactions">
+              <td>{{ tx["Transaction ID"] }}</td>
+              <td>{{ tx["Date"] }}</td>
+              <td>{{ tx["Amount"] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
