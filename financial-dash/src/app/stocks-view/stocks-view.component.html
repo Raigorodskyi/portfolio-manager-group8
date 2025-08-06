@@ -9,16 +9,17 @@
         <a href="#">Overview</a>
       </nav>
     </div>
-    <div class="portfolio-values">
-      <div class="value-box">
-        <h3>Portfolio Value: ${{ this.globalValue }}</h3>
-      </div>
-      <div class="value-box">
-        <h3>Net Stock Valuation: ${{ this.stocksValuation }}</h3>
-      </div>
+  </div>
+  <div class="portfolio-values-header">
+    <div class="value-box">
+      <h3>Portfolio Value</h3>
+      <p class="value">${{ this.globalValue }}</p>
+    </div>
+    <div class="value-box">
+      <h3>Net Stock Valuation</h3>
+      <p class="value">${{ this.stocksValuation }}</p>
     </div>
   </div>
-
   <div class="dashboard-grid">
     <div class="your-stocks-box">
       <h2>Your Stocks</h2>
@@ -55,7 +56,9 @@
                 </span>
               </span>
             </td>
-            <button (click)="openModal('sell', stock)">Sell</button>
+            <button (click)="openModal('sell', stock)" class="padd">
+              Sell
+            </button>
           </tr>
         </tbody>
       </table>

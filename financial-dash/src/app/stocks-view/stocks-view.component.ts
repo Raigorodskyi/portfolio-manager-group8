@@ -3,13 +3,15 @@ import { MarketStock, Stock } from '../stock';
 import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { PortfolioService } from '../services/portfolio.service';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-stocks-view',
-  imports: [CommonModule, CurrencyPipe, FormsModule],
+  imports: [CommonModule, CurrencyPipe, FormsModule, RouterModule],
   templateUrl: './stocks-view.component.html',
   styleUrl: './stocks-view.component.css'
 })
+
 export class StocksViewComponent implements OnInit {
 marketStockValues: { [ticker: string]: Stock } = {};
 marketStockList: { ticker: string; data: Stock }[] = [];
@@ -54,6 +56,13 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
     this.portfolioService.getStockByTicker(query).subscribe((stockData) => {
       this.marketStockValues = stockData;
       console.log(this.marketStockValues);
+
+      // Calculate stocks total dynamically
+      this.stocksValuation = this.stockList.reduce(
+        (sum, stock) => sum + stock.data.current_price * stock.data.shares,
+        0
+      );
+      console.log(this.marketStockList);
     });
   }
 

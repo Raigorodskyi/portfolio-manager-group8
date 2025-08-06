@@ -3,10 +3,11 @@ import { Bond, MarketBond } from '../bond';
 import { PortfolioService } from '../services/portfolio.service';
 import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-bonds-view',
-  imports: [CommonModule, CurrencyPipe, FormsModule],
+  imports: [CommonModule, CurrencyPipe, FormsModule, RouterModule],
   templateUrl: './bonds-view.component.html',
   styleUrl: './bonds-view.component.css'
 })
