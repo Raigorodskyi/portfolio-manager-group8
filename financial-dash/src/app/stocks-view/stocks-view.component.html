@@ -33,7 +33,6 @@
       from stocks.
     </p>
   </div>
-
   <div class="dashboard-grid">
     <div class="your-stocks-box">
       <h2>Your Stocks</h2>
@@ -70,7 +69,9 @@
                 </span>
               </span>
             </td>
-            <button (click)="openModal('sell', stock)">Sell</button>
+            <button (click)="openModal('sell', stock)" class="padd">
+              Sell
+            </button>
           </tr>
         </tbody>
       </table>
