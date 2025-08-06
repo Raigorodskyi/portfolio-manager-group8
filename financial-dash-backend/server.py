@@ -198,7 +198,7 @@ def view_stock_action(data):
         info = stock.info
         stock_name = info.get("shortName")
         current_price = info.get("regularMarketPrice")
-
+        
         if stock_name and current_price:
             return {
                 "stock_ticker": ticker,
