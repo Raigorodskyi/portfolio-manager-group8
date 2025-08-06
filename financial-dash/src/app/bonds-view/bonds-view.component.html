@@ -121,12 +121,12 @@
       <p *ngIf="modalQuantity && selectedBond">
         Total {{ modalType === "buy" ? "Cost" : "Return" }}:
         {{
-          modalType === "sell"
-            ? (selectedBond.current_price * modalQuantity | currency)
-            : (selectedBond.current_price * modalQuantity | currency)
+          (selectedBond.current_price * modalQuantity | currency)
         }}
       </p>
-
+      <div *ngIf="response" class="response-message">
+        {{ response }}
+      </div>
       <div class="modal-actions">
         <button (click)="confirmTransaction()">Confirm</button>
         <button (click)="closeModal()">Cancel</button>

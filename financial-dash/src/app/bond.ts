@@ -15,3 +15,21 @@ export interface MarketBond {
   number_of_bonds: number;
   purchase_price_per_bond: number;
 }
+
+export interface BuyBondResponse {
+  bond_ticker: string;
+  message: string;
+  purchase_price: number;
+  quantity_bought: number;
+  total_cost: number;
+  transaction_id: number;
+}
+
+export interface SellBondResponse {
+  bond_ticker: string;
+    market_value: number;
+    message: string;
+    quantity_sold: number;
+    sale_value: number;
+    transaction_id: number;
+}

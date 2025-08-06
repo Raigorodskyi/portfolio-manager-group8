@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { Bond, MarketBond } from '../bond';
+import { Bond, BuyBondResponse, MarketBond, SellBondResponse } from '../bond';
 import { Stock } from '../stock';
 
 @Injectable({
@@ -55,7 +55,7 @@ export class PortfolioService {
       action: 'buy',
       stock_ticker: ticker,
       number_of_shares: shares,
-      bank_id: bank_id,
+      bank_ID: bank_id,
     };
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ export class PortfolioService {
       action: 'sell',
       stock_ticker: ticker,
       number_of_shares: shares,
-      bank_id: bank_id,
+      bank_ID: bank_id,
       purchase_price_per_stock: purchase_price_per_stock,
     };
     const headers = new HttpHeaders({
@@ -104,6 +104,50 @@ export class PortfolioService {
       payload,
       { headers }
     );
+  }
+
+  buyBond(
+    ticker: string,
+    shares: number,
+    bank_id: number
+  ): Observable<BuyBondResponse> {
+    const payload = {
+      action: 'buy',
+      bond_ticker: ticker,
+      number_of_bonds: shares,
+      bank_ID: bank_id,
+    };
+  
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+    console.log(payload);
+  
+    return this.http.post<BuyBondResponse>(this.getBondUrl, payload, { headers });
+  }
+
+  sellBond(
+    ticker: string,
+    shares: number,
+    bank_id: number,
+    purchase_price_per_bond: number
+  ): Observable<SellBondResponse> {
+    const payload = {
+      action: 'sell',
+      bond_ticker: ticker,
+      number_of_bonds: shares,
+      bank_ID: bank_id,
+      purchase_price_per_bond: purchase_price_per_bond,
+    };
+
+    console.log(payload);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+
+    return this.http.post<SellBondResponse>(this.getBondUrl, payload, {
+      headers,
+    });
   }
 
   getBankAccounts(): Observable<any> {
