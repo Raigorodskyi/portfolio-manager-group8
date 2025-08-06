@@ -80,6 +80,7 @@ h1 a {
   font-size: 1rem;
 }
 
+.your-bonds-box button,
 .other-bonds-box button,
 .bond-search button {
   padding: 8px 16px;
@@ -91,7 +92,8 @@ h1 a {
   font-weight: bold;
 }
 
-.bond-search button:hover {
+.your-bonds-box button:hover,
+.other-bonds-box button:hover {
   background-color: #e711e7;
 }
 
@@ -302,6 +304,33 @@ tr:last-child td {
 .value-box .value {
   font-size: 1.8rem;
   font-weight: bold;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: rgb(143, 76, 187);
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 300px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
 }
 
 /* Responsive fallback */

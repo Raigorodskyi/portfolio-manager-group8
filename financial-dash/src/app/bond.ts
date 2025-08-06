@@ -8,6 +8,7 @@ export interface Bond {
 }
 
 export interface MarketBond {
+  bond_ticker: string;
   bond_name: string;
   bond_yield: number;
   current_price: number;

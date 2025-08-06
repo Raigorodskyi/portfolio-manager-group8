@@ -54,13 +54,6 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
     this.portfolioService.getStockByTicker(query).subscribe((stockData) => {
       this.marketStockValues = stockData;
       console.log(this.marketStockValues);
-
-      // Calculate stocks total dynamically
-      this.stocksValuation = this.stockList.reduce(
-        (sum, stock) => sum + stock.data.current_price * stock.data.shares,
-        0
-      );
-      console.log(this.marketStockList);
     });
   }
 

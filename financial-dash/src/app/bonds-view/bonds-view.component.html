@@ -55,6 +55,12 @@
                 </span>
               </span>
             </td>
+            <button (click)="openModal('sell', { 
+              ticker: bond['Bond Ticker'],
+              name: bond['Bond Name'],
+              current_price: bond['Current Market Price (from YFinance)'],
+              data: bond
+            })">Sell</button>
           </tr>
         </tbody>
       </table>
@@ -79,14 +85,51 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let bond of marketBond">
-            <td>{{ bond.ticker }}</td>
-            <td>{{ bond.data.bond_name }}</td>
-            <td>{{ bond.data.current_price | currency }}</td>
-            <button>Buy</button>
+          <tr *ngIf="marketBondValues['bond_ticker']">
+            <td>{{ marketBondValues["bond_ticker"] }}</td>
+            <td>{{ marketBondValues["bond_name"] }}</td>
+            <td>{{ marketBondValues["current_price"] }}</td>
+            <button (click)="openModal('buy', {
+              ticker: marketBondValues['bond_ticker'],
+              name: marketBondValues['bond_name'],
+              current_price: marketBondValues['current_price'],
+              data: marketBondValues
+            })">Buy</button>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 </div>
+
+
+  <!--<Buy/Sell Modal -->
+  <div class="modal-backdrop" *ngIf="showModal">
+    <div class="modal">
+      <h2>
+        {{ modalType === "buy" ? "Buy" : "Sell" }}
+        {{
+          modalType === "buy"
+            ? selectedBond?.stock_ticker
+            : selectedBond?.ticker
+        }}
+      </h2>
+
+      <label>Quantity:</label>
+      <input type="number" [(ngModel)]="modalQuantity" min="1" />
+
+      <p *ngIf="modalQuantity && selectedBond">
+        Total {{ modalType === "buy" ? "Cost" : "Return" }}:
+        {{
+          modalType === "sell"
+            ? (selectedBond.current_price * modalQuantity | currency)
+            : (selectedBond.current_price * modalQuantity | currency)
+        }}
+      </p>
+
+      <div class="modal-actions">
+        <button (click)="confirmTransaction()">Confirm</button>
+        <button (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>

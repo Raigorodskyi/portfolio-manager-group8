@@ -12,11 +12,16 @@ import { FormsModule } from '@angular/forms';
 })
 export class BondsViewComponent implements OnInit {
 bonds: Bond[] = [];
-marketBond: { ticker: string; data: MarketBond }[] = [];
+marketBondValues: { [ticker: string]: MarketBond } = {};
+marketBondList: { ticker: string; data: MarketBond }[] = [];
 isBrowser: boolean = false;
 bondValuation: number = 0;
 globalValue: number = 0;
 searchQuery: string = '';
+showModal = false;
+modalType: 'buy' | 'sell' = 'buy';
+selectedBond: any = null;
+modalQuantity: number = 1;
 
 constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioService: PortfolioService) {
   this.isBrowser = isPlatformBrowser(platformId);
@@ -41,15 +46,42 @@ getBondDiff(bond: Bond): number {
 }
 
 getMarketBond() {
-  const query = this.searchQuery;
+  const query = this.searchQuery.toUpperCase();
 
   this.portfolioService.getBondByTicker(query).subscribe((bond) => {
-    this.marketBond = Object.entries(bond).map(([ticker, bond]) => ({
-      ticker,
-      data: bond
-    }))
-  });
-  console.log(this.marketBond, query);
+    this.marketBondValues = bond;
+  console.log(this.marketBondValues);
+});
+
 }
+
+openModal(type: 'buy' | 'sell', bond: any) {
+  this.modalType = type;
+  this.selectedBond = bond;
+  this.modalQuantity = 1;
+  this.showModal = true;
+  
+}
+
+closeModal() {
+  this.showModal = false;
+}
+
+confirmTransaction() {
+  if (!this.selectedBond || !this.modalQuantity) return;
+
+  const total = this.selectedBond.current_price * this.modalQuantity;
+
+  if (this.modalType === 'buy') {
+    console.log(`Buying ${this.modalQuantity} of ${this.selectedBond.ticker} for ${total}`);
+    // TODO: Implement buy logic using this.selectedBond.data
+  } else {
+    console.log(`Selling ${this.modalQuantity} of ${this.selectedBond.ticker} for ${total}`);
+    // TODO: Implement sell logic using this.selectedBond.data
+  }
+
+  this.closeModal();
+}
+
 
 }

@@ -29,20 +29,56 @@ export class PortfolioService {
     return this.http.get<{ [ticker: string]: Stock }>(this.stocksUrl);
   }
 
-   getStockByTicker(ticker: string): Observable<{ stock: Stock }> {
+  getStockByTicker(ticker: string): Observable<{ stock: Stock }> {
+  const payload = {
+    action: 'view',
+    stock_ticker: ticker
+  };
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json'
+  });
+
+  return this.http.post<{ stock: Stock  }>(this.getStockUrl, payload, { headers });
+}
+
+  buyStock(ticker: string, shares: number, bank_id: string): Observable<{ stock: Stock }> {
+    const payload = {
+      action: 'buy',
+      stock_ticker: ticker,
+      number_of_shares: shares,
+      bank_id: bank_id
+    };
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<{ stock: Stock  }>(this.getStockUrl, payload, { headers });
+  }
+
+  sellStock(ticker: string, shares: number, bank_id: string, purchase_price_per_stock: number): Observable<{ stock: Stock }> {
+    const payload = {
+      action: 'sell',
+      stock_ticker: ticker,
+      number_of_shares: shares,
+      bank_id: bank_id,
+      purchase_price_per_stock: purchase_price_per_stock
+    };
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<{ stock: Stock  }>(this.getStockUrl, payload, { headers });
+  }
+
+  getBondByTicker(ticker: string):  Observable<{ [ticker: string]: MarketBond }> {
     const payload = {
       action: 'view',
-      stock_ticker: ticker
+      bond_ticker: ticker
     };
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
   
-    return this.http.post<{ stock: Stock  }>(this.getStockUrl, payload, { headers });
-  }
-
-  getBondByTicker(ticker: string):  Observable<{ [ticker: string]: MarketBond }> {
-    console.log(this.getBondUrl + ticker);
-    return this.http.get<{ [ticker: string]: MarketBond }>(this.getBondUrl + ticker);
+    return this.http.post<{ [ticker: string]: MarketBond }>(this.getBondUrl, payload, { headers });
   }
 }
