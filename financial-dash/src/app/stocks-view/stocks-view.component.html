@@ -10,16 +10,30 @@
       </nav>
     </div>
   </div>
-  <div class="portfolio-values-header">
-    <div class="value-box">
+
+  <!-- VALUE BOXES are now separate -->
+  <div class="portfolio-values-boxes">
+    <div class="value-card">
       <h3>Portfolio Value</h3>
-      <p class="value">${{ this.globalValue }}</p>
+      <p class="main-value">${{ globalValue | number: '1.2-2' }}</p>
     </div>
-    <div class="value-box">
+
+    <div class="value-card">
       <h3>Net Stock Valuation</h3>
-      <p class="value">${{ this.stocksValuation }}</p>
+      <p class="main-value">${{ stocksValuation | number: '1.2-2' }}</p>
     </div>
   </div>
+
+  <!-- Profit gain/loss sentence -->
+  <div class="portfolio-profit-box">
+    <p [ngClass]="getTotalStockChange() >= 0 ? 'gain-text' : 'loss-text'">
+      Your portfolio has
+      {{ getTotalStockChange() >= 0 ? 'gained' : 'lost' }}
+      <strong>{{ getTotalStockChange() | currency }}</strong>
+      from stocks.
+    </p>
+  </div>
+
   <div class="dashboard-grid">
     <div class="your-stocks-box">
       <h2>Your Stocks</h2>
@@ -56,9 +70,7 @@
                 </span>
               </span>
             </td>
-            <button (click)="openModal('sell', stock)" class="padd">
-              Sell
-            </button>
+            <button (click)="openModal('sell', stock)">Sell</button>
           </tr>
         </tbody>
       </table>

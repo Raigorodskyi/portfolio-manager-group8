@@ -70,6 +70,12 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
     return (stock.current_price - stock.purchase_price) * stock.shares;
   }  
 
+  getTotalStockChange(): number {
+    return this.stockList.reduce((sum, stock) => {
+      const gain = (stock.data.current_price - stock.data.purchase_price) * stock.data.shares;
+      return sum + gain;
+    }, 0);
+  }
 
   openModal(type: 'buy' | 'sell', stock: any) {
     this.modalType = type;
