@@ -168,7 +168,7 @@ def get_bank_accounts():
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT bank_account_name, bank_account_type 
+            SELECT bank_account_name, bank_account_type, current_balance 
             FROM Bank_Account 
         """)
 
@@ -178,8 +178,8 @@ def get_bank_accounts():
 
         if rows:
             accounts = [
-                {"bank_account_name": name, "bank_account_type": acc_type}
-                for name, acc_type in rows
+                {"bank_account_name": name, "bank_account_type": acc_type, "current_balance": balance}
+                for name, acc_type, balance in rows
             ]
             return jsonify({ "bank_accounts": accounts})
         else:
@@ -569,14 +569,12 @@ def view_bond(ticker):
         bond_yield = info.get("yield")  
 
         if bond_name and current_price:
-            bond_values = {}
-            bond_values[ticker] = {
+            return {
                 'bond_ticker': ticker,
                 'bond_name': bond_name,
                 'current_price': round(float(current_price), 2),
                 'bond_yield': round(float(bond_yield), 2) if bond_yield else None
             }
-            return jsonify(bond_values)
         else:
             return jsonify({
                 "ticker": ticker,
@@ -591,13 +589,15 @@ def bond_action():
     data = request.get_json()
     action = data['action']
     ticker = data['bond_ticker']
-    quantity = data['number_of_bonds']
-    bank_id = data['bank_ID']
-    purchase_price = data['purchase_price_per_bond']
     
-    if action == 'buy':
+    if action == 'buy':    
+        quantity = data['number_of_bonds']
+        bank_id = data['bank_ID']
         return buy_bond(ticker, quantity, bank_id)
     elif action == 'sell':
+        quantity = data['number_of_bonds']
+        bank_id = data['bank_ID']
+        purchase_price = data['purchase_price_per_bond']
         return sell_bond(ticker, quantity, bank_id, purchase_price)
     elif action == 'view':
         return view_bond(ticker)
