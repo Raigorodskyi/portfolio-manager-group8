@@ -1,5 +1,5 @@
 import { Component, Inject, Input, OnInit, PLATFORM_ID } from '@angular/core';
-import { Stock } from '../stock';
+import { MarketStock, Stock } from '../stock';
 import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { PortfolioService } from '../services/portfolio.service';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,8 @@ import { FormsModule } from '@angular/forms';
 })
 export class StocksViewComponent implements OnInit {
 marketStockValues: { [ticker: string]: Stock } = {};
-marketStockList: {current_price: number, stock_name: string, stock_ticker: string}[] = [];
+marketStockList: { ticker: string; data: Stock }[] = [];
+currtentStockPrice: number = 0;
 stockValues: { [ticker: string]: Stock } = {};
 stockList: { ticker: string; data: Stock }[] = [];
 isBrowser: boolean = false;
@@ -53,12 +54,7 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
     this.portfolioService.getStockByTicker(query).subscribe((stockData) => {
       this.marketStockValues = stockData;
       console.log(this.marketStockValues);
-      // this.marketStockList ={
-      //   current_price: this.marketStockValues['current_price'],
-      //   stock_name: "Apple Inc.",
-      //   stock_ticker: "AAPL"
-      // };
-  
+
       // Calculate stocks total dynamically
       this.stocksValuation = this.stockList.reduce(
         (sum, stock) => sum + stock.data.current_price * stock.data.shares,
