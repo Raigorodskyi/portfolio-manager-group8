@@ -61,7 +61,6 @@ h1 a {
 .your-stocks-box {
   grid-area: portfolio;
   background: linear-gradient(to right, #2e19b4, #4c0e92);
-  height: 200%;
 }
 
 .stock-search {
@@ -121,7 +120,6 @@ h1 a {
   grid-area: top;
   background: linear-gradient(to right, #d4c4f8, #b48ef5);
   color: #222;
-  height: 200%;
 }
 
 /* Card base styles */
