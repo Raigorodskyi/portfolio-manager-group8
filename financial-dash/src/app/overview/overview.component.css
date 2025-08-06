@@ -1,11 +1,17 @@
 /* Global styles */
-body, .dashboard-container {
+body,
+.dashboard-container {
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #2a004c, #41007e);
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #884eb8, #b48ef5);
   color: white;
   min-height: 100vh;
+}
+h1 a {
+  text-decoration: none; /* remove underline */
+  color: inherit; /* inherit the h1 color */
+  cursor: pointer; /* show pointer on hover */
 }
 
 /* Header */
@@ -53,7 +59,7 @@ body, .dashboard-container {
 /* Grid area assignments */
 .portfolio-box {
   grid-area: portfolio;
-  background: linear-gradient(to right, #2400ff, #7900ff);
+  background: linear-gradient(to right, #302e3d, #6d2283);
 }
 
 .portfolio-content {
@@ -71,8 +77,33 @@ body, .dashboard-container {
 
 .top-performers-box {
   grid-area: top;
-  background: linear-gradient(to right, #d4c4f8, #b48ef5);
-  color: #222;
+  background: linear-gradient(to right, #33127d, #2446df);
+  color: #fffbfb;
+  padding: 1rem;
+}
+
+.box-title {
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  text-align: left;
+}
+
+.table-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+table[_ngcontent-ng-c3842743884] {
+  border-collapse: collapse;
+  color: #fffbfb;
+}
+
+th[_ngcontent-ng-c3842743884],
+td[_ngcontent-ng-c3842743884] {
+  padding: 0.6rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .your-stocks-box {
@@ -82,7 +113,7 @@ body, .dashboard-container {
 
 .your-bonds-box {
   grid-area: bonds;
-  background: linear-gradient(to right, #853acc, #6807e6);
+  background: linear-gradient(to right, #b48ef5, #e02ad7d6);
 }
 
 /* Card base styles */
@@ -119,7 +150,7 @@ h2 {
 .loss {
   font-size: 1.2rem;
   margin-top: 0.25rem;
-  color: rgb(243, 9, 9); 
+  color: rgb(243, 9, 9);
 }
 
 /* Tables */
@@ -129,7 +160,8 @@ table {
   font-size: 0.95rem;
 }
 
-th, td {
+th,
+td {
   padding: 0.6rem;
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -144,12 +176,11 @@ th {
   flex: 0 0 auto;
 }
 
-
 .section-box {
   background-color: white;
   border-radius: 0.5rem;
   padding: 1rem;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 1rem;
   position: relative;
 }
@@ -161,7 +192,7 @@ th {
 }
 
 .view-button {
-  background-color: #461c6d; 
+  background-color: #000000;
   color: white;
   width: 100px;
   height: 30px;

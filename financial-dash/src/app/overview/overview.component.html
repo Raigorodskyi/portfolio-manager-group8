@@ -1,10 +1,13 @@
 <div class="dashboard-container">
   <!-- Header (optional) -->
   <div class="dashboard-header">
-    <h1>My Portfolio</h1>
+    <h1><a href="#">My Portfolio</a></h1>
+
     <nav>
+      <a routerLink="/stocks">Stocks</a>
+      <a routerLink="/bonds">Bonds</a>
+      <a routerLink="/profile">Profile</a>
       <a href="#" class="active">Overview</a>
-      <a href="#">Profile</a>
     </nav>
   </div>
 
@@ -17,23 +20,32 @@
             baseChart
             [data]="pieChartData"
             [type]="pieChartType"
+            [options]="pieChartOptions"
           ></canvas>
         </div>
-      
+
         <div class="stats">
-          <div class="value">${{this.globalValue | number:'1.2-2'}}</div>
+          <div class="value">${{ this.globalValue | number : "1.2-2" }}</div>
           <div>
-            Overall:  
-            <span [ngClass]="globalValue - previousGlobalValue >= 0 ? 'gain' : 'loss'" class="gain-loss-cell">
-              {{ globalValue - previousGlobalValue  | currency }}
+            Overall:
+            <span
+              [ngClass]="
+                globalValue - previousGlobalValue >= 0 ? 'gain' : 'loss'
+              "
+              class="gain-loss-cell"
+            >
+              {{ globalValue - previousGlobalValue | currency }}
               <span class="material-symbols-outlined">
-                {{ globalValue - previousGlobalValue  >= 0 ? 'trending_up' : 'trending_down' }}
+                {{
+                  globalValue - previousGlobalValue >= 0
+                    ? "trending_up"
+                    : "trending_down"
+                }}
               </span>
             </span>
           </div>
         </div>
       </div>
-      
     </div>
 
     <!-- Bottom Left -->
@@ -59,10 +71,17 @@
             <td>{{ stock.data.purchase_price | currency }}</td>
             <td>{{ stock.data.current_price | currency }}</td>
             <td>
-              <span [ngClass]="getGainLoss(stock.data) >= 0 ? 'gain' : 'loss'" class="gain-loss-cell">
+              <span
+                [ngClass]="getGainLoss(stock.data) >= 0 ? 'gain' : 'loss'"
+                class="gain-loss-cell"
+              >
                 {{ getGainLoss(stock.data) | currency }}
                 <span class="material-symbols-outlined">
-                  {{ getGainLoss(stock.data) >= 0 ? 'trending_up' : 'trending_down' }}
+                  {{
+                    getGainLoss(stock.data) >= 0
+                      ? "trending_up"
+                      : "trending_down"
+                  }}
                 </span>
               </span>
             </td>
@@ -73,25 +92,40 @@
 
     <!-- Right Side Full Height -->
     <div class="top-performers-box">
-      <h2>Top Performers</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Ticker</th>
-            <th>Change</th>
-            <th>Percentage</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><th>AAPL</th><td>$9.266</td><td>5%</td></tr>
-          <tr><th>MSFT</th><td>$3,571.75</td><td>1.45%</td></tr>
-          <tr><th>TSLA</th><td>$28,383.75</td><td>3.33%</td></tr>
-        </tbody>
-      </table>
+      <h2 class="box-title">Top Performers</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Change</th>
+              <th>Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>AAPL</td>
+              <td>$9.266</td>
+              <td>5%</td>
+            </tr>
+            <tr>
+              <td>MSFT</td>
+              <td>$3,571.75</td>
+              <td>1.45%</td>
+            </tr>
+            <tr>
+              <td>TSLA</td>
+              <td>$28,383.75</td>
+              <td>3.33%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+
     <div class="your-bonds-box">
       <h2>Your Bonds</h2>
-      <button class="view-button"  [routerLink]="['/bonds']">View</button>
+      <button class="view-button" [routerLink]="['/bonds']">View</button>
       <table>
         <thead>
           <tr>
@@ -106,17 +140,22 @@
         </thead>
         <tbody>
           <tr *ngFor="let bond of bonds">
-            <td>{{ bond['Bond Name'] }}</td>
-            <td>{{ bond['Bond Ticker'] }}</td>
-            <td>{{ bond['Purchase Price per Bond'] | currency }}</td>
-            <td>{{ bond['Bond Yield (%)'] }}</td>
-            <td>{{ bond['Current Market Price (from YFinance)'] | currency }}</td>
-            <td>{{ bond['Number of Bonds'] }}</td>
+            <td>{{ bond["Bond Name"] }}</td>
+            <td>{{ bond["Bond Ticker"] }}</td>
+            <td>{{ bond["Purchase Price per Bond"] | currency }}</td>
+            <td>{{ bond["Bond Yield (%)"] }}</td>
             <td>
-              <span [ngClass]="getBondDiff(bond) >= 0 ? 'gain' : 'loss'" class="gain-loss-cell">
+              {{ bond["Current Market Price (from YFinance)"] | currency }}
+            </td>
+            <td>{{ bond["Number of Bonds"] }}</td>
+            <td>
+              <span
+                [ngClass]="getBondDiff(bond) >= 0 ? 'gain' : 'loss'"
+                class="gain-loss-cell"
+              >
                 {{ getBondDiff(bond) | currency }}
                 <span class="material-symbols-outlined">
-                  {{ getBondDiff(bond) >= 0 ? 'trending_up' : 'trending_down' }}
+                  {{ getBondDiff(bond) >= 0 ? "trending_up" : "trending_down" }}
                 </span>
               </span>
             </td>

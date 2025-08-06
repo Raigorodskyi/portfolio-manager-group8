@@ -1,7 +1,13 @@
-import { Component, Inject, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  PLATFORM_ID,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { BaseChartDirective, NgChartsModule } from 'ng2-charts';
-import { ChartData, ChartType } from 'chart.js';
+import { ChartData, ChartType, ChartOptions } from 'chart.js';
 import { PortfolioService } from '../services/portfolio.service';
 import { Bond } from '../bond';
 import { Stock } from '../stock';
@@ -11,11 +17,10 @@ import { RouterModule } from '@angular/router';
   selector: 'app-overview',
   imports: [CommonModule, NgChartsModule, RouterModule],
   templateUrl: './overview.component.html',
-  styleUrl: './overview.component.css'
+  styleUrl: './overview.component.css',
 })
 export class OverviewComponent implements OnInit {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
-
 
   isBrowser: boolean = false;
   globalValue = 0;
@@ -25,92 +30,131 @@ export class OverviewComponent implements OnInit {
   stockValues: { [ticker: string]: Stock } = {};
   stockList: { ticker: string; data: Stock }[] = [];
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioService: PortfolioService) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private portfolioService: PortfolioService
+  ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
-  
-  pieChartType: ChartType = 'pie';
+
+  pieChartType: 'pie' = 'pie';
+
   pieChartData: ChartData<'pie', number[], string> = {
     datasets: [
       {
-        data: this.stockList.map(stock => stock.data.current_price),
-        backgroundColor: ['#007aff', '#34c759', '#ff3b30']
-      }
+        data: this.stockList.map((stock) => stock.data.current_price),
+        backgroundColor: ['#007aff', '#41e76aff', '#ff584fff'],
+      },
     ],
-    labels: this.stockList.map(stock => stock.ticker)
+    labels: this.stockList.map((stock) => stock.ticker),
+  };
+  pieChartOptions: ChartOptions<'pie'> = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top', // Make legend horizontal at the top
+        labels: {
+          color: '#ffffff',
+          font: {
+            size: 16,
+            weight: 'bold',
+          },
+          boxWidth: 20, // Width of the color box
+          padding: 15, // Space between legend items
+        },
+      },
+      tooltip: {
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        bodyFont: {
+          size: 14,
+          weight: 'bold',
+        },
+      },
+    },
   };
 
   // Calculate total value of bonds and stocks
-getTotalValue(items: { price: number; quantity: number }[]): number {
-  return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-}
+  getTotalValue(items: { price: number; quantity: number }[]): number {
+    return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
 
-getGainLoss(stock: Stock): number {
-  return (stock.current_price - stock.purchase_price) * stock.shares;
-}
+  getGainLoss(stock: Stock): number {
+    return (stock.current_price - stock.purchase_price) * stock.shares;
+  }
 
-getBondDiff(bond: Bond): number {
-  return (bond['Current Market Price (from YFinance)'] - bond['Purchase Price per Bond']) 
-              * bond['Number of Bonds'];
-}
-
-ngOnInit(): void {
-  // First, fetch stock values
-  this.portfolioService.getStocks().subscribe((stockData) => {
-    this.stockValues = stockData;
-    this.stockList = Object.entries(stockData).map(([ticker, stock]) => ({
-      ticker,
-      data: stock
-    }));
-
-    // Calculate stocks total dynamically
-    const stocksTotal = this.stockList.reduce(
-      (sum, stock) => sum + stock.data.current_price * stock.data.shares,
-      0
+  getBondDiff(bond: Bond): number {
+    return (
+      (bond['Current Market Price (from YFinance)'] -
+        bond['Purchase Price per Bond']) *
+      bond['Number of Bonds']
     );
+  }
 
-    const prevStocksTotal = this.stockList.reduce(
-      (sum, stock) => sum + stock.data.purchase_price * stock.data.shares,
-      0
-    );
+  ngOnInit(): void {
+    // First, fetch stock values
+    this.portfolioService.getStocks().subscribe((stockData) => {
+      this.stockValues = stockData;
+      this.stockList = Object.entries(stockData).map(([ticker, stock]) => ({
+        ticker,
+        data: stock,
+      }));
 
-    // Then fetch bonds
-    this.portfolioService.getBonds().subscribe((bondsData) => {
-      this.bonds = bondsData;
+      // Calculate stocks total dynamically
+      const stocksTotal = this.stockList.reduce(
+        (sum, stock) => sum + stock.data.current_price * stock.data.shares,
+        0
+      );
 
-      const bondsTotal = this.bonds.reduce((sum, bond) =>
-        sum + bond['Current Market Price (from YFinance)'] * bond['Number of Bonds'], 0);
+      const prevStocksTotal = this.stockList.reduce(
+        (sum, stock) => sum + stock.data.purchase_price * stock.data.shares,
+        0
+      );
 
-      const prevBondsTotal = this.bonds.reduce((sum, bond) =>
-        sum + bond['Purchase Price per Bond'] * bond['Number of Bonds'], 0);
-      // Then fetch cash
-      this.portfolioService.getCashValue().subscribe((cashData) => {
-        this.cash = cashData.total_value;
+      // Then fetch bonds
+      this.portfolioService.getBonds().subscribe((bondsData) => {
+        this.bonds = bondsData;
 
-        // Global portfolio value
-        this.globalValue = this.cash + bondsTotal + stocksTotal;
-        console.log(this.globalValue, this.cash, bondsTotal, stocksTotal);
-        this.previousGlobalValue = this.cash + prevBondsTotal + prevStocksTotal;
-        if(isPlatformBrowser(this.platformId)) {
-          localStorage.setItem('globalValue', this.globalValue.toString());
-        }
+        const bondsTotal = this.bonds.reduce(
+          (sum, bond) =>
+            sum +
+            bond['Current Market Price (from YFinance)'] *
+              bond['Number of Bonds'],
+          0
+        );
 
-        // Update pie chart
-        this.pieChartData = {
-          labels: ['Cash', 'Bonds', 'Stocks'],
-          datasets: [
-            {
-              data: [this.cash, bondsTotal, stocksTotal],
-              backgroundColor: ['#fcd34d', '#60a5fa', '#8b5cf6']
-            }
-          ]
-        };
+        const prevBondsTotal = this.bonds.reduce(
+          (sum, bond) =>
+            sum + bond['Purchase Price per Bond'] * bond['Number of Bonds'],
+          0
+        );
+        // Then fetch cash
+        this.portfolioService.getCashValue().subscribe((cashData) => {
+          this.cash = cashData.total_value;
 
-        this.chart?.update();
+          // Global portfolio value
+          this.globalValue = this.cash + bondsTotal + stocksTotal;
+          console.log(this.globalValue, this.cash, bondsTotal, stocksTotal);
+          this.previousGlobalValue =
+            this.cash + prevBondsTotal + prevStocksTotal;
+          if (isPlatformBrowser(this.platformId)) {
+            localStorage.setItem('globalValue', this.globalValue.toString());
+          }
+
+          // Update pie chart
+          this.pieChartData = {
+            labels: ['Cash', 'Bonds', 'Stocks'],
+            datasets: [
+              {
+                data: [this.cash, bondsTotal, stocksTotal],
+                backgroundColor: ['#17b24bff', '#1c82ffff', '#8875b5ff'],
+              },
+            ],
+          };
+
+          this.chart?.update();
+        });
       });
     });
-  });
-}
-
-
+  }
 }
