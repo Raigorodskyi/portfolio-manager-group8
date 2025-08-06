@@ -8,7 +8,7 @@ import { BankAccount } from '../bank-account';
 
 @Component({
   selector: 'app-bonds-view',
-  imports: [CommonModule, CurrencyPipe, FormsModule],
+  imports: [CommonModule, CurrencyPipe, FormsModule, RouterModule],
   templateUrl: './bonds-view.component.html',
   styleUrl: './bonds-view.component.css'
 })
