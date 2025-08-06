@@ -56,6 +56,14 @@ getMarketBond() {
 
 }
 
+getTotalBondChange(): number {
+  return this.bonds.reduce((sum, bond) => {
+    const gain = (bond["Current Market Price (from YFinance)"] - bond["Purchase Price per Bond"]) * bond["Number of Bonds"];
+    return sum + gain;
+  }, 0);
+}
+
+
 openModal(type: 'buy' | 'sell', bond: any) {
   this.modalType = type;
   this.selectedBond = bond;

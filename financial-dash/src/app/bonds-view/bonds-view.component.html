@@ -9,16 +9,33 @@
         <a href="#">Overview</a>
       </nav>
     </div>
-    <div class="portfolio-values">
-      <div class="value-box">
-        <h3>Portfolio Value: ${{ this.globalValue }}</h3>
-      </div>
-      <div class="value-box">
-        <h3>Net Bonds Valuation: ${{ this.bondValuation }}</h3>
-      </div>
+  </div>
+
+  <!-- VALUE BOXES for Bonds -->
+  <div class="portfolio-values-boxes">
+    <div class="value-card">
+      <h3>Portfolio Value</h3>
+      <p class="main-value">${{ globalValue | number: '1.2-2' }}</p>
+    </div>
+
+    <div class="value-card">
+      <h3>Net Bond Valuation</h3>
+      <p class="main-value">${{ bondValuation | number: '1.2-2' }}</p>
     </div>
   </div>
 
+
+  <!-- Profit gain/loss sentence for bonds -->
+  <div class="portfolio-profit-box">
+    <p [ngClass]="getTotalBondChange() >= 0 ? 'gain-text' : 'loss-text'">
+      Your portfolio has
+      {{ getTotalBondChange() >= 0 ? 'gained' : 'lost' }}
+      <strong>{{ getTotalBondChange() | currency }}</strong>
+      from bonds.
+    </p>
+  </div>
+
+  
   <div class="dashboard-grid">
     <div class="your-bonds-box">
       <h2>Your Bonds</h2>
