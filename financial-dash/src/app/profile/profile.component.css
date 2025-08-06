@@ -242,8 +242,122 @@ tr:last-child td {
       "bonds";
   }
 }
+.bank-accounts-box {
+  background: #9872d9;
+  border: 1px solid #34495e;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.transactions-box {
+  background: #884eb8;
+  border: 1px solid #2ecc71;
+  border-bottom: 2px solid #502e61;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.bank-accounts-box h2 {
+  margin-top: 0;
+  color: white;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.transactions-box h2 {
+  margin-top: 0;
+  color: white;
+  border-bottom: 2px solid #aa2ecc;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
 .bank-list {
-  list-style-type: none;
-  padding-left: 0;
+  list-style: none;
+  padding: 0;
   margin: 0;
+}
+
+.bank-list li {
+  margin-bottom: 10px;
+}
+
+.bank-list button {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s;
+  font-size: 14px;
+  color: white;
+}
+
+.bank-list button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: #3498db;
+}
+
+.bank-list button:active {
+  background-color: #3498db;
+  color: white;
+}
+
+.transactions-box table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.transactions-box th,
+.transactions-box td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.transactions-box th {
+  background-color: rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+  color: white;
+}
+
+.transactions-box tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.transactions-box p {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+  margin: 40px 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .dashboard-header nav {
+    justify-content: center;
+  }
 }

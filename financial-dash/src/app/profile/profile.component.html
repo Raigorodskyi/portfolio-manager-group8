@@ -1,7 +1,6 @@
 <div class="dashboard-container">
   <div class="dashboard-header">
     <h1><a href="#">My Portfolio</a></h1>
-
     <nav>
       <a routerLink="/stocks">Stocks</a>
       <a routerLink="/bonds">Bonds</a>
@@ -11,7 +10,7 @@
   </div>
 
   <div class="dashboard-grid">
-    <div class="profile-container">
+    <div class="bank-accounts-box">
       <h2>Your Bank Accounts</h2>
       <ul class="bank-list">
         <li *ngFor="let account of bankAccounts; let i = index">
@@ -20,9 +19,10 @@
           </button>
         </li>
       </ul>
-
-      <div *ngIf="transactions.length > 0">
-        <h3>Transactions</h3>
+    </div>
+    <div class="transactions-box">
+      <h2>Transactions</h2>
+      <div *ngIf="transactions.length > 0; else noTransactions">
         <table>
           <thead>
             <tr>
@@ -40,6 +40,12 @@
           </tbody>
         </table>
       </div>
+      <ng-template #noTransactions>
+        <p>Select a bank account to view transactions</p>
+      </ng-template>
     </div>
   </div>
 </div>
+
+
+  
