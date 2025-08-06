@@ -168,7 +168,7 @@ def get_bank_accounts():
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT bank_account_name, bank_account_type, current_balance 
+            SELECT bank_id, bank_account_name, bank_account_type, current_balance 
             FROM Bank_Account 
         """)
 
@@ -178,8 +178,8 @@ def get_bank_accounts():
 
         if rows:
             accounts = [
-                {"bank_account_name": name, "bank_account_type": acc_type, "current_balance": balance}
-                for name, acc_type, balance in rows
+                {"bank_id": bank_id, "bank_account_name": name, "bank_account_type": acc_type, "current_balance": balance}
+                for bank_id, name, acc_type, balance in rows
             ]
             return jsonify({ "bank_accounts": accounts})
         else:
