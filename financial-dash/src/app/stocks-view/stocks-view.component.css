@@ -143,7 +143,9 @@ h2 {
   font-weight: bold;
   margin: 0.5rem 0;
 }
-
+.padd {
+  margin-top: 20px;
+}
 .gain,
 .return {
   font-size: 1.2rem;
@@ -201,12 +203,14 @@ th {
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .portfolio-values-header h3 {
   margin: 0;
   font-weight: normal;
   position: relative;
+  justify-content: center;
 }
 
 .section-box {
