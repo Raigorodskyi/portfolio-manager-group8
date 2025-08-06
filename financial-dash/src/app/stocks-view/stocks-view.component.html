@@ -1,115 +1,126 @@
 <div class="dashboard-container">
   <div class="dashboard-header">
     <div class="header-top">
-      <h1>My Portfolio</h1>
+      <h1><a href="#">My Portfolio</a></h1>
       <nav>
-        <a href="#" class="active">Overview</a>
-        <a href="#">Profile</a>
+        <a routerLink="/stocks" class="active">Stocks</a>
+        <a routerLink="/bonds">Bonds</a>
+        <a routerLink="/profile">Profile</a>
+        <a href="#">Overview</a>
       </nav>
     </div>
     <div class="portfolio-values">
       <div class="value-box">
-        <h3>Portfolio Value: ${{this.globalValue}} </h3>
+        <h3>Portfolio Value: ${{ this.globalValue }}</h3>
       </div>
       <div class="value-box">
-        <h3>Net Stock Valuation: ${{this.stocksValuation}}</h3>
+        <h3>Net Stock Valuation: ${{ this.stocksValuation }}</h3>
       </div>
     </div>
   </div>
-  
-  
-    <div class="dashboard-grid">
-      <div class="your-stocks-box">
-        <h2>Your Stocks</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Ticker</th>
-              <th>Name</th>
-              <th>Shares</th>
-              <th>Purchase Price</th>
-              <th>Current Price</th>
-              <th>Difference</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let stock of stockList">
-              <td>{{ stock.ticker }}</td>
-              <td>{{ stock.data.stock_name }}</td>
-              <td>{{ stock.data.shares }}</td>
-              <td>{{ stock.data.purchase_price | currency }}</td>
-              <td>{{ stock.data.current_price | currency }}</td>
-              <td>
-                <span [ngClass]="getGainLoss(stock.data) >= 0 ? 'gain' : 'loss'" class="gain-loss-cell">
-                  {{ getGainLoss(stock.data) | currency }}
-                  <span class="material-symbols-outlined">
-                    {{ getGainLoss(stock.data) >= 0 ? 'trending_up' : 'trending_down' }}
-                  </span>
+
+  <div class="dashboard-grid">
+    <div class="your-stocks-box">
+      <h2>Your Stocks</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Name</th>
+            <th>Shares</th>
+            <th>Purchase Price</th>
+            <th>Current Price</th>
+            <th>Difference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let stock of stockList">
+            <td>{{ stock.ticker }}</td>
+            <td>{{ stock.data.stock_name }}</td>
+            <td>{{ stock.data.shares }}</td>
+            <td>{{ stock.data.purchase_price | currency }}</td>
+            <td>{{ stock.data.current_price | currency }}</td>
+            <td>
+              <span
+                [ngClass]="getGainLoss(stock.data) >= 0 ? 'gain' : 'loss'"
+                class="gain-loss-cell"
+              >
+                {{ getGainLoss(stock.data) | currency }}
+                <span class="material-symbols-outlined">
+                  {{
+                    getGainLoss(stock.data) >= 0
+                      ? "trending_up"
+                      : "trending_down"
+                  }}
                 </span>
-              </td>
-              <button (click)="openModal('sell', stock)">Sell</button>
-            </tr>
-          </tbody>
-        </table>
+              </span>
+            </td>
+            <button (click)="openModal('sell', stock)">Sell</button>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="other-stocks-box">
+      <h2>View Other Stocks</h2>
+
+      <div class="stock-search">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search by ticker or name"
+        />
+        <button (click)="this.getMarketStock()">Search</button>
       </div>
 
-      <div class="other-stocks-box">
-        <h2>View Other Stocks</h2>
-      
-        <div class="stock-search">
-          <input
-            type="text"
-            [(ngModel)]="searchQuery"
-            placeholder="Search by ticker or name"
-          />
-          <button (click)="this.getMarketStock()">Search</button>
-        </div>
-      
-        <table>
-          <thead>
-            <tr>
-              <th>Ticker</th>
-              <th>Name</th>
-              <th>Current Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngIf="marketStockValues['stock_ticker']">
-              <td>{{ marketStockValues['stock_ticker'] }}</td>
-              <td>{{ marketStockValues['stock_name'] }}</td>
-              <td>{{ marketStockValues['current_price']  }}</td>
-              <button (click)="openModal('buy', marketStockValues)">Buy</button>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Name</th>
+            <th>Current Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="marketStockValues['stock_ticker']">
+            <td>{{ marketStockValues["stock_ticker"] }}</td>
+            <td>{{ marketStockValues["stock_name"] }}</td>
+            <td>{{ marketStockValues["current_price"] }}</td>
+            <button (click)="openModal('buy', marketStockValues)">Buy</button>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-  
 
-<!--<Buy/Sell Modal -->
-<div class="modal-backdrop" *ngIf="showModal">
-  <div class="modal">
-    <h2>
-      {{ modalType === 'buy' ? 'Buy' : 'Sell' }}
-      {{ modalType === 'buy' ? selectedStock?.stock_ticker : selectedStock?.ticker }}
-    </h2>
+  <!--<Buy/Sell Modal -->
+  <div class="modal-backdrop" *ngIf="showModal">
+    <div class="modal">
+      <h2>
+        {{ modalType === "buy" ? "Buy" : "Sell" }}
+        {{
+          modalType === "buy"
+            ? selectedStock?.stock_ticker
+            : selectedStock?.ticker
+        }}
+      </h2>
 
-    <label>Quantity:</label>
-    <input type="number" [(ngModel)]="modalQuantity" min="1" />
+      <label>Quantity:</label>
+      <input type="number" [(ngModel)]="modalQuantity" min="1" />
 
-    <p *ngIf="modalQuantity && selectedStock">
-      Total {{ modalType === 'buy' ? 'Cost' : 'Return' }}:
-      {{
-        modalType === 'sell'
-          ? (selectedStock.data.current_price * modalQuantity | currency)
-          : (selectedStock.current_price * modalQuantity | currency)
-      }}
-    </p>
+      <p *ngIf="modalQuantity && selectedStock">
+        Total {{ modalType === "buy" ? "Cost" : "Return" }}:
+        {{
+          modalType === "sell"
+            ? (selectedStock.data.current_price * modalQuantity | currency)
+            : (selectedStock.current_price * modalQuantity | currency)
+        }}
+      </p>
 
-    <div class="modal-actions">
-      <button (click)="confirmTransaction()">Confirm</button>
-      <button (click)="closeModal()">Cancel</button>
+      <div class="modal-actions">
+        <button (click)="confirmTransaction()">Confirm</button>
+        <button (click)="closeModal()">Cancel</button>
+      </div>
     </div>
   </div>
 </div>
