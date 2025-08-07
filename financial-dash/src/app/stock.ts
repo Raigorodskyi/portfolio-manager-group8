@@ -6,6 +6,14 @@ export interface Stock {
   transaction_ID: number;
 }
 
+export interface StockBuyMessage {
+  message: string;
+  quantity_sold: number;
+  sale_value: number;
+  stock_ticker: string;
+  transaction_id: number;
+}
+
 export class MarketStock {
   constructor(
     public stock_ticker: string,

@@ -123,6 +123,13 @@
 
       <label>Quantity:</label>
       <input type="number" [(ngModel)]="modalQuantity" min="1" />
+      <td></td>
+      <label for="bankAccount">Select Bank Account:</label>
+      <select id="bankAccount" [(ngModel)]="selectedBankAccount">
+        <option *ngFor="let bank of bankAccounts" [ngValue]="bank">
+          {{ bank.bank_account_name }} ({{ bank.bank_account_type }}) - {{ bank.current_balance | currency }}
+        </option>
+      </select>
 
       <p *ngIf="modalQuantity && selectedStock">
         Total {{ modalType === "buy" ? "Cost" : "Return" }}:
