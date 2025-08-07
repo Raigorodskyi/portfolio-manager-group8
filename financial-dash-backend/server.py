@@ -226,8 +226,8 @@ def view_stock_action(data):
     except Exception as e:
         return {"error": str(e)}, 500
 
-def sell_stock_action(stock_ticker, quantity_to_sell, bank_id, transaction_id):
-    if quantity_to_sell <= 0 or not stock_ticker or bank_id <= 0 or not transaction_id:
+def sell_stock_action(stock_ticker, quantity_to_sell, bank_id):
+    if quantity_to_sell <= 0 or not stock_ticker or bank_id <= 0:
         return jsonify({"error": "Invalid input"}), 400
 
     conn = get_db_connection()
@@ -238,8 +238,8 @@ def sell_stock_action(stock_ticker, quantity_to_sell, bank_id, transaction_id):
         cursor.execute("""
             SELECT stock_ID, stock_ticker, number_of_shares, purchase_price_per_share, transaction_ID
             FROM Stocks
-            WHERE stock_ticker = %s AND transaction_ID = %s
-        """, (stock_ticker, transaction_id))
+            WHERE stock_ticker = %s
+        """, (stock_ticker))
         stock_row = cursor.fetchone()
 
         if not stock_row:
@@ -297,7 +297,6 @@ def sell_stock_action(stock_ticker, quantity_to_sell, bank_id, transaction_id):
             "quantity_sold": quantity_to_sell,
             "sale_price_per_share": current_price,
             "sale_value": sale_value,
-            "original_transaction_id": transaction_id,
             "sale_transaction_id": new_transaction_id
         }), 200
 
@@ -334,16 +333,37 @@ def buy_stock_action(data):
             VALUES (%s, %s, %s)
         """, (bank_ID, now, total_cost))
         transaction_ID = cursor.lastrowid
+        
+        # Find out if the stock exists already or not
+        cursor.execute("""SELECT number_of_shares, purchase_price_per_share 
+                          FROM Stocks WHERE stock_ticker = %s""", (stock_ticker,))
+        exists = cursor.fetchone()
+        
+        if exists:
+            # Stock already exists — update it
+            existing_shares, existing_price = exists
+            total_shares = existing_shares + number_of_shares
+            new_acb = ((existing_shares * existing_price) + (number_of_shares * stock_current_price)) / total_shares
 
-        cursor.execute("""
-            INSERT INTO Stocks (
-                transaction_ID, number_of_shares, purchase_price_per_share,
-                current_price_per_share, purchase_date, stock_ticker
-            ) VALUES (%s, %s, %s, %s, %s, %s)
-        """, (
-            transaction_ID, number_of_shares, stock_current_price,
-            stock_current_price, now, stock_ticker
-        ))
+            cursor.execute("""
+                UPDATE Stocks
+                SET transaction_ID = %s
+                    number_of_shares = %s,
+                    purchase_price_per_share = %s,
+                    current_price_per_share = %s,
+                    purchase_date = %s
+                WHERE stock_ticker = %s
+            """, (transaction_ID, total_shares, new_acb, stock_current_price, now, stock_ticker))
+        else:
+            cursor.execute("""
+                INSERT INTO Stocks (
+                    transaction_ID, number_of_shares, purchase_price_per_share,
+                    current_price_per_share, purchase_date, stock_ticker
+                ) VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                transaction_ID, number_of_shares, stock_current_price,
+                stock_current_price, now, stock_ticker
+            ))
 
         cursor.execute("SELECT total_value FROM User_portfolio")
         user_portfolio = cursor.fetchone()
@@ -390,9 +410,7 @@ def buy_stock_action(data):
         cursor.close()
         conn.close()
 
-# API route that lets a user either buy/sell/view a stock based on action 
-from flask import Response  # make sure this is imported
-
+# API route that lets a user either buy/sell/view a stock based on action
 @app.route("/api/stock_action", methods=["POST"])
 def stock_action():
     data = request.get_json()
@@ -415,7 +433,7 @@ def stock_action():
     return result
 
 # Function that processes a user's sell request
-def sell_bond(bond_ticker, quantity_to_sell, bank_id, transaction_id):
+def sell_bond(bond_ticker, quantity_to_sell, bank_id):
     if quantity_to_sell <= 0 or not bond_ticker or bank_id <= 0:
         return jsonify({"error": "Invalid input"}), 400
 
@@ -427,8 +445,8 @@ def sell_bond(bond_ticker, quantity_to_sell, bank_id, transaction_id):
             SELECT bond_ID, bond_name, bond_ticker, purchase_price_per_bond, bond_yield, 
                    number_of_bonds, dividend_frequency, transaction_ID
             FROM Bonds
-            WHERE bond_ticker = %s and transaction_id = %s
-        """, (bond_ticker, transaction_id))
+            WHERE bond_ticker = %s
+        """, (bond_ticker))
         bond_row = cursor.fetchone()
 
         if not bond_row:
@@ -527,21 +545,42 @@ def buy_bond(bond_ticker, number_of_bonds, bank_id):
         """, (bank_id, datetime.now(), total_cost))
         transaction_id = cursor.lastrowid
 
-        cursor.execute("""
-            INSERT INTO Bonds (
-                bond_name, bond_ticker, purchase_price_per_bond, bond_yield,
-                number_of_bonds, dividend_frequency, last_updated, transaction_ID
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (
-            bond_name,
-            bond_ticker,
-            current_price,
-            bond_yield,
-            number_of_bonds,
-            dividend_frequency,
-            datetime.now(),
-            transaction_id
-        ))
+        # Find out if the stock exists already or not
+        cursor.execute("""SELECT number_of_bonds, purchase_price_per_bond 
+                          FROM Bonds WHERE bond_ticker = %s""", (bond_ticker,))
+        exists = cursor.fetchone()
+        
+        if exists:
+            # Bond already exists — update it
+            existing_shares, existing_price = exists
+            total_shares = existing_shares + number_of_bonds
+            new_acb = ((existing_shares * existing_price) + (number_of_bonds * current_price)) / total_shares
+
+            cursor.execute("""
+                UPDATE Stocks
+                SET transaction_ID = %s
+                    number_of_bonds = %s,
+                    purchase_price_per_bond = %s,
+                    current_price_per_bond = %s,
+                    purchase_date = %s
+                WHERE bond_ticker = %s
+            """, (transaction_id, total_shares, new_acb, current_price, datetime.now(), bond_ticker))
+        else:
+            cursor.execute("""
+                INSERT INTO Bonds (
+                    bond_name, bond_ticker, purchase_price_per_bond, bond_yield,
+                    number_of_bonds, dividend_frequency, last_updated, transaction_ID
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                bond_name,
+                bond_ticker,
+                current_price,
+                bond_yield,
+                number_of_bonds,
+                dividend_frequency,
+                datetime.now(),
+                transaction_id
+            ))
 
         cursor.execute("""
             UPDATE Bank_Account

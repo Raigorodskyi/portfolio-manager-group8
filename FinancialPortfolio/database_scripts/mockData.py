@@ -64,13 +64,13 @@ for account in bank_accounts:
 
 # Transactions data
 transactions_data = [
-    {'bank_id': bank_ids[0], 'date': datetime.now() - timedelta(days=30), 'amount': 150.00},  # Chase checking
+    {'bank_id': bank_ids[0], 'date': datetime.now() - timedelta(days=30), 'amount': 1500.00},  # Chase checking
     {'bank_id': bank_ids[0], 'date': datetime.now() - timedelta(days=25), 'amount': 200.00},
-    {'bank_id': bank_ids[1], 'date': datetime.now() - timedelta(days=45), 'amount': 300.00},  # Wells Fargo savings
-    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=60), 'amount': 400.00},  # Investment account
+    {'bank_id': bank_ids[1], 'date': datetime.now() - timedelta(days=45), 'amount': 4300.65},  # Wells Fargo savings
+    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=60), 'amount': 456.00},  # Investment account
     {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=35), 'amount': 500.00},
-    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=20), 'amount': 600.00},
-    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=10), 'amount': 700.00 },
+    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=20), 'amount': 600.60},
+    {'bank_id': bank_ids[2], 'date': datetime.now() - timedelta(days=10), 'amount': 7000.00 },
 ]
 
 transaction_ids = []
