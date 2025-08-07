@@ -377,6 +377,10 @@ tr:last-child td {
   margin: 0;
 }
 
+.buy-button {
+  margin-top: 5px;
+}
+
 /* Highlighted profit message */
 .portfolio-profit-box {
   text-align: center;
@@ -401,5 +405,10 @@ tr:last-child td {
 }
 
 .loss-text {
-  color: #ff4d4d;
+  color: rgb(243, 9, 9);
+}
+
+.error_msg{
+  color: rgb(0, 4, 255);
+  font-size: 20px;
 }
