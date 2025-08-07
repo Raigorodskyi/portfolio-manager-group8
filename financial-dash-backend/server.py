@@ -218,77 +218,97 @@ def sell_stock_action(data):
     stock_ticker = data.get("stock_ticker", "").upper()
     quantity_to_sell = int(data.get("number_of_shares", 0))
     bank_id = int(data.get("bank_ID", 0))
-    purchase_price = float(data.get("purchase_price_per_share", 0))
-
+    transaction_id = data.get("transaction_ID", None)
+    
+    if transaction_id:
+        try:
+            transaction_id = int(transaction_id)
+        except ValueError:
+            return {"error": "Invalid transaction ID"}, 400
+    else:
+        return {"error": "Transaction ID is required"}, 400
+    
     if quantity_to_sell <= 0 or not stock_ticker or bank_id <= 0:
         return {"error": "Invalid input"}, 400
-
+    
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
+    
     try:
+        # Find the original purchase transaction and corresponding stock record
         cursor.execute("""
-            SELECT stock_id, number_of_shares, purchase_price_per_share
-            FROM Stocks
-            WHERE stock_ticker = %s and purchase_price_per_share = %s
-        """, (stock_ticker, purchase_price))
+            SELECT s.stock_id, s.number_of_shares, s.purchase_price_per_share, t.amount
+            FROM Stocks s
+            JOIN Transaction t ON s.transaction_id = t.transaction_ID
+            WHERE s.stock_ticker = %s AND t.transaction_ID = %s AND t.bank_ID = %s
+        """, (stock_ticker, transaction_id, bank_id))
+        
         stock_row = cursor.fetchone()
-
+        
         if not stock_row:
-            return {"error": "Stock not found"}, 404
+            return {"error": "Stock purchase not found for the given transaction ID"}, 404
+        
         if stock_row['number_of_shares'] < quantity_to_sell:
             return {"error": "Not enough shares to sell"}, 400
-
+        
+        # Get current stock price
         stock_data = yf.Ticker(stock_ticker)
         current_price = stock_data.info.get("regularMarketPrice")
+        
         if not current_price:
             return {"error": "Unable to fetch stock price"}, 500
-
+        
         sale_value = quantity_to_sell * current_price
-
+        
         # Update Stocks table
         if stock_row['number_of_shares'] == quantity_to_sell:
+            # Selling all shares - delete the record
             cursor.execute("DELETE FROM Stocks WHERE stock_id = %s", (stock_row['stock_id'],))
         else:
+            # Selling partial shares - update quantity
             cursor.execute("""
                 UPDATE Stocks SET number_of_shares = number_of_shares - %s
                 WHERE stock_id = %s
             """, (quantity_to_sell, stock_row['stock_id']))
-
-        # Update Bank and Portfolio
+        
+        # Update Bank Account balance
         cursor.execute("""
             UPDATE Bank_Account SET current_balance = current_balance + %s
             WHERE bank_id = %s
         """, (sale_value, bank_id))
-
+        
+        # Update User Portfolio total value
         cursor.execute("""
             UPDATE User_portfolio SET total_value = total_value + %s
             WHERE user_id = (SELECT user_id FROM Bank_Account WHERE bank_id = %s)
         """, (sale_value, bank_id))
-
-        # Record transaction
+        
+        # Record the sale transaction (negative amount could indicate sale, or use positive with transaction type)
         cursor.execute("""
-            INSERT INTO Transaction (bank_id, date, amount)
+            INSERT INTO Transaction (bank_ID, date, amount)
             VALUES (%s, %s, %s)
         """, (bank_id, datetime.now(), sale_value))
-        transaction_id = cursor.lastrowid
-
+        
+        sale_transaction_id = cursor.lastrowid
+        
         conn.commit()
+        
         return {
             "message": "Stock sold successfully",
             "stock_ticker": stock_ticker,
             "quantity_sold": quantity_to_sell,
+            "sale_price_per_share": current_price,
             "sale_value": sale_value,
-            "transaction_id": transaction_id
+            "original_transaction_id": transaction_id,
+            "sale_transaction_id": sale_transaction_id
         }, 200
-
+        
     except mysql.connector.Error as err:
         conn.rollback()
         return {"error": str(err)}, 500
     finally:
         cursor.close()
         conn.close()
-
 # Function that handles a user's request to buy a stock
 def buy_stock_action(data):
     stock_ticker = data.get('stock_ticker')
@@ -392,7 +412,7 @@ def stock_action():
         return jsonify(result)
 
 # Function that processes a user's sell request
-def sell_bond(bond_ticker, quantity_to_sell, bank_id, purchase_price):
+def sell_bond(bond_ticker, quantity_to_sell, bank_id, transaction_id):
     if quantity_to_sell <= 0 or not bond_ticker or bank_id <= 0:
         return jsonify({"error": "Invalid input"}), 400
 
@@ -404,8 +424,8 @@ def sell_bond(bond_ticker, quantity_to_sell, bank_id, purchase_price):
             SELECT bond_ID, bond_name, bond_ticker, purchase_price_per_bond, bond_yield, 
                    number_of_bonds, dividend_frequency, transaction_ID
             FROM Bonds
-            WHERE bond_ticker = %s and purchase_price_per_bond = %s
-        """, (bond_ticker, purchase_price))
+            WHERE bond_ticker = %s and transaction_id = %s
+        """, (bond_ticker, transaction_id))
         bond_row = cursor.fetchone()
 
         if not bond_row:
@@ -600,8 +620,8 @@ def bond_action():
     elif action == 'sell':
         quantity = data['number_of_bonds']
         bank_id = data['bank_ID']
-        purchase_price = data['purchase_price_per_bond']
-        return sell_bond(ticker, quantity, bank_id, purchase_price)
+        transaction_id = data['transaction_ID']
+        return sell_bond(ticker, quantity, bank_id, transaction_id)
     elif action == 'view':
         return view_bond(ticker)
     else:
