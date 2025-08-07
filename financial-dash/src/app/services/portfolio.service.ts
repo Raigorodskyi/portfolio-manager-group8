@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { Bond, BuyBondResponse, MarketBond, SellBondResponse } from '../bond';
 import { Stock, StockBuyMessage, StockSellMessage } from '../stock';
+import { LargeNumberLike } from 'crypto';
 
 @Injectable({
   providedIn: 'root',
@@ -69,15 +70,13 @@ export class PortfolioService {
   sellStock(
     ticker: string,
     shares: number,
-    bank_id: number,
-    transaction_ID: number
+    bank_id: number
   ): Observable<StockSellMessage> {
     const payload = {
       action: 'sell',
       stock_ticker: ticker,
       number_of_shares: shares,
-      bank_ID: bank_id,
-      transaction_ID: transaction_ID,
+      bank_ID: bank_id
     };
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
@@ -129,15 +128,13 @@ export class PortfolioService {
   sellBond(
     ticker: string,
     shares: number,
-    bank_id: number,
-    transaction_id: number
+    bank_id: number
   ): Observable<SellBondResponse> {
     const payload = {
       action: 'sell',
       bond_ticker: ticker,
       number_of_bonds: shares,
-      bank_ID: bank_id,
-      transaction_ID: transaction_id,
+      bank_ID: bank_id
     };
 
     console.log(payload);

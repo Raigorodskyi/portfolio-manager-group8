@@ -134,40 +134,43 @@
   </div>
 </div>
 
-  <!--<Buy/Sell Modal -->
-  <div class="modal-backdrop" *ngIf="showModal">
-    <div class="modal">
-      <h2>
-        {{ modalType === "buy" ? "Buy" : "Sell" }}
-        {{
-          modalType === "buy"
-            ? selectedBond?.stock_ticker
-            : selectedBond?.ticker
-        }}
-      </h2>
+<div *ngIf="response" class="confirmation-toast">
+  {{ response }}
+</div>
 
-      <label>Quantity: </label>
-      <input type="number" [(ngModel)]="modalQuantity" min="1" />
-      <td></td>
+<!-- Buy/Sell Modal -->
+<div class="modal-backdrop" *ngIf="showModal">
+  <div class="modal">
+    <h2>
+      {{ modalType === "buy" ? "Buy" : "Sell" }}
+      {{ modalType === "buy" ? selectedBond?.bond_ticker : selectedBond?.data.bond_ticker }}
+    </h2>
+
+    <div class="form-group">
+      <label for="quantity">Quantity:</label>
+      <input id="quantity" type="number" [(ngModel)]="modalQuantity" min="1" />
+    </div>
+
+    <div class="form-group">
       <label for="bankAccount">Select Bank Account:</label>
       <select id="bankAccount" [(ngModel)]="selectedBankAccount">
         <option *ngFor="let bank of bankAccounts" [ngValue]="bank">
           {{ bank.bank_account_name }} ({{ bank.bank_account_type }}) - {{ bank.current_balance | currency }}
         </option>
       </select>
+    </div>
+    <p *ngIf="modalQuantity && selectedBond">
+      Total {{ modalType === "buy" ? "Cost" : "Return" }}:
+      {{
+        modalType === "sell"
+          ? (selectedBond.data.current_price * modalQuantity | currency)
+          : (selectedBond.current_price * modalQuantity | currency)
+      }}
+    </p>
 
-      <p *ngIf="modalQuantity && selectedBond">
-        Total {{ modalType === "buy" ? "Cost" : "Return" }}:
-        {{
-          (selectedBond.current_price * modalQuantity | currency)
-        }}
-      </p>
-      <div *ngIf="response" class="response-message">
-        {{ response }}
-      </div>
-      <div class="modal-actions">
-        <button (click)="confirmTransaction()">Confirm</button>
-        <button (click)="closeModal()">Cancel</button>
-      </div>
+    <div class="modal-actions">
+      <button (click)="confirmTransaction()">Confirm</button>
+      <button (click)="closeModal()">Cancel</button>
     </div>
   </div>
+</div>

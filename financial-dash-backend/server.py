@@ -240,7 +240,7 @@ def sell_stock_action(stock_ticker, quantity_to_sell, bank_id):
             SELECT stock_ID, stock_ticker, number_of_shares, purchase_price_per_share, transaction_ID
             FROM Stocks
             WHERE stock_ticker = %s
-        """, (stock_ticker))
+        """, (stock_ticker,))
         stock_row = cursor.fetchone()
 
         if not stock_row:
@@ -427,8 +427,7 @@ def stock_action():
         result = sell_stock_action(
             data['stock_ticker'], 
             data['number_of_shares'], 
-            data['bank_ID'], 
-            data['transaction_ID']
+            data['bank_ID']
         )
     elif action == "view":
         result = view_stock_action(data)
@@ -451,7 +450,7 @@ def sell_bond(bond_ticker, quantity_to_sell, bank_id):
                    number_of_bonds, dividend_frequency, transaction_ID
             FROM Bonds
             WHERE bond_ticker = %s
-        """, (bond_ticker))
+        """, (bond_ticker,))
         bond_row = cursor.fetchone()
 
         if not bond_row:
@@ -670,8 +669,7 @@ def bond_action():
     elif action == 'sell':
         quantity = data['number_of_bonds']
         bank_id = data['bank_ID']
-        transaction_id = data['transaction_ID']
-        return sell_bond(ticker, quantity, bank_id, transaction_id)
+        return sell_bond(ticker, quantity, bank_id)
     elif action == 'view':
         return view_bond(ticker)
     else:

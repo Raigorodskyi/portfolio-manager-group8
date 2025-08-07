@@ -148,8 +148,7 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
       this.portfolioService.sellStock(
         this.selectedStock.data.stock_ticker,
         this.modalQuantity,
-        this.selectedBankAccount?.bank_id || 1,
-        this.selectedStock.data.transaction_ID
+        this.selectedBankAccount?.bank_id || 1
       ).subscribe({
         next: (data) => {
           this.response = data.message ?? 'Stock sale successful!';
