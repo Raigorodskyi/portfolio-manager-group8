@@ -1,6 +1,5 @@
 from datetime import datetime
-from flask import Flask, jsonify, request
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 import mysql.connector
 import yfinance as yf
 from flask_cors import CORS
@@ -15,11 +14,17 @@ CORS(app)
 # Connect to database
 def get_db_connection():
     return mysql.connector.connect(
-        host=os.getenv("DB_HOST"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME")
+        host="localhost",
+        user="root",
+        password="n3u3da!",
+        database="finance_portfolio"
     )
+    # return mysql.connector.connect(
+    #     host=os.getenv("DB_HOST"),
+    #     user=os.getenv("DB_USER"),
+    #     password=os.getenv("DB_PASSWORD"),
+    #     database=os.getenv("DB_NAME")
+    # )
 
 # API route that fetches all the user's owned stocks and stock related data
 @app.route('/api/stock_values', methods=['GET'])
@@ -213,102 +218,88 @@ def view_stock_action(data):
     except Exception as e:
         return {"error": str(e)}, 500
 
-# Function that handles a user's request to sell a stock
-def sell_stock_action(data):
-    stock_ticker = data.get("stock_ticker", "").upper()
-    quantity_to_sell = int(data.get("number_of_shares", 0))
-    bank_id = int(data.get("bank_ID", 0))
-    transaction_id = data.get("transaction_ID", None)
-    
-    if transaction_id:
-        try:
-            transaction_id = int(transaction_id)
-        except ValueError:
-            return {"error": "Invalid transaction ID"}, 400
-    else:
-        return {"error": "Transaction ID is required"}, 400
-    
-    if quantity_to_sell <= 0 or not stock_ticker or bank_id <= 0:
-        return {"error": "Invalid input"}, 400
-    
+def sell_stock_action(stock_ticker, quantity_to_sell, bank_id, transaction_id):
+    if quantity_to_sell <= 0 or not stock_ticker or bank_id <= 0 or not transaction_id:
+        return jsonify({"error": "Invalid input"}), 400
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
+
     try:
-        # Find the original purchase transaction and corresponding stock record
+        # Fetch stock info for the specified transaction
         cursor.execute("""
-            SELECT s.stock_id, s.number_of_shares, s.purchase_price_per_share, t.amount
-            FROM Stocks s
-            JOIN Transaction t ON s.transaction_id = t.transaction_ID
-            WHERE s.stock_ticker = %s AND t.transaction_ID = %s AND t.bank_ID = %s
-        """, (stock_ticker, transaction_id, bank_id))
-        
+            SELECT stock_ID, stock_ticker, number_of_shares, purchase_price_per_share, transaction_ID
+            FROM Stocks
+            WHERE stock_ticker = %s AND transaction_ID = %s
+        """, (stock_ticker, transaction_id))
         stock_row = cursor.fetchone()
-        
+
         if not stock_row:
-            return {"error": "Stock purchase not found for the given transaction ID"}, 404
-        
+            return jsonify({"error": "Stock purchase not found"}), 404
         if stock_row['number_of_shares'] < quantity_to_sell:
-            return {"error": "Not enough shares to sell"}, 400
-        
-        # Get current stock price
+            return jsonify({"error": "Not enough shares to sell"}), 400
+
+        # Get current stock price from yfinance
         stock_data = yf.Ticker(stock_ticker)
-        current_price = stock_data.info.get("regularMarketPrice")
-        
+        current_price = stock_data.info.get("regularMarketPrice", stock_row['purchase_price_per_share'])
         if not current_price:
-            return {"error": "Unable to fetch stock price"}, 500
+            return jsonify({"error": "Unable to fetch stock price"}), 500
+
+        sale_value = round(quantity_to_sell * current_price, 2)
         
-        sale_value = quantity_to_sell * current_price
-        
-        # Update Stocks table
+        print(stock_row.keys())
+        # Update or delete stock entry
         if stock_row['number_of_shares'] == quantity_to_sell:
-            # Selling all shares - delete the record
-            cursor.execute("DELETE FROM Stocks WHERE stock_id = %s", (stock_row['stock_id'],))
+            cursor.execute("DELETE FROM Stocks WHERE stock_ID = %s", (stock_row['stock_ID'],))
         else:
-            # Selling partial shares - update quantity
             cursor.execute("""
-                UPDATE Stocks SET number_of_shares = number_of_shares - %s
-                WHERE stock_id = %s
-            """, (quantity_to_sell, stock_row['stock_id']))
-        
-        # Update Bank Account balance
+                UPDATE Stocks
+                SET number_of_shares = number_of_shares - %s
+                WHERE stock_ID = %s
+            """, (quantity_to_sell, stock_row['stock_ID']))
+
+        # Update bank account
         cursor.execute("""
-            UPDATE Bank_Account SET current_balance = current_balance + %s
+            UPDATE Bank_Account
+            SET current_balance = current_balance + %s
             WHERE bank_id = %s
         """, (sale_value, bank_id))
-        
-        # Update User Portfolio total value
+
+        # Update user portfolio
         cursor.execute("""
-            UPDATE User_portfolio SET total_value = total_value + %s
-            WHERE user_id = (SELECT user_id FROM Bank_Account WHERE bank_id = %s)
+            UPDATE User_portfolio
+            SET total_value = total_value + %s
+            WHERE user_id = (
+                SELECT user_id FROM Bank_Account WHERE bank_id = %s
+            )
         """, (sale_value, bank_id))
-        
-        # Record the sale transaction (negative amount could indicate sale, or use positive with transaction type)
+
+        # Record transaction
         cursor.execute("""
-            INSERT INTO Transaction (bank_ID, date, amount)
+            INSERT INTO Transaction (bank_id, date, amount)
             VALUES (%s, %s, %s)
         """, (bank_id, datetime.now(), sale_value))
-        
-        sale_transaction_id = cursor.lastrowid
-        
+        new_transaction_id = cursor.lastrowid
+
         conn.commit()
-        
-        return {
+
+        return jsonify({
             "message": "Stock sold successfully",
             "stock_ticker": stock_ticker,
             "quantity_sold": quantity_to_sell,
             "sale_price_per_share": current_price,
             "sale_value": sale_value,
             "original_transaction_id": transaction_id,
-            "sale_transaction_id": sale_transaction_id
-        }, 200
-        
+            "sale_transaction_id": new_transaction_id
+        }), 200
+
     except mysql.connector.Error as err:
         conn.rollback()
-        return {"error": str(err)}, 500
+        return jsonify({"error": str(err)}), 500
     finally:
         cursor.close()
         conn.close()
+        
 # Function that handles a user's request to buy a stock
 def buy_stock_action(data):
     stock_ticker = data.get('stock_ticker')
@@ -392,6 +383,8 @@ def buy_stock_action(data):
         conn.close()
 
 # API route that lets a user either buy/sell/view a stock based on action 
+from flask import Response  # make sure this is imported
+
 @app.route("/api/stock_action", methods=["POST"])
 def stock_action():
     data = request.get_json()
@@ -400,16 +393,18 @@ def stock_action():
     if action == "buy":
         result = buy_stock_action(data)
     elif action == "sell":
-        result = sell_stock_action(data)
+        result = sell_stock_action(
+            data['stock_ticker'], 
+            data['number_of_shares'], 
+            data['bank_ID'], 
+            data['transaction_ID']
+        )
     elif action == "view":
         result = view_stock_action(data)
     else:
         return jsonify({"error": "Invalid action"}), 400
 
-    if isinstance(result, tuple):
-        return jsonify(result[0]), result[1]
-    else:
-        return jsonify(result)
+    return result
 
 # Function that processes a user's sell request
 def sell_bond(bond_ticker, quantity_to_sell, bank_id, transaction_id):
