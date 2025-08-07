@@ -41,7 +41,8 @@ def get_stock_value():
     cursor.close()
     conn.close()
 
-    stock_values = {}
+    stock_values = []
+
     for row in rows:
         ticker = row['stock_ticker']
         shares = row['number_of_shares']
@@ -52,25 +53,32 @@ def get_stock_value():
             current_price = stock.info['regularMarketPrice']
             stock_name = stock.info.get('shortName')
             if current_price is not None and stock_name is not None:
-                stock_values[ticker] = {
+                stock_values.append({
+                    'stock_ticker': ticker,
                     'stock_name': stock_name,
                     'transaction_ID': transaction_ID,
                     'purchase_price': float(purchase_price),
                     'shares': shares,
                     'current_price': float(current_price)
-                }
+                })
             else:
-                stock_values[ticker] = {
-                    'error': 'Price or name not available',
+                stock_values.append({
+                    'stock_ticker': ticker,
+                    'stock_name': stock_name or 'N/A',
+                    'transaction_ID': transaction_ID,
                     'purchase_price': float(purchase_price),
-                    'shares': shares
-                }
+                    'shares': shares,
+                    'error': 'Price or name not available'
+                })
         except Exception as e:
-            stock_values[ticker] = {
-                'error': str(e),
+            stock_values.append({
+                'stock_ticker': ticker,
+                'transaction_ID': transaction_ID,
                 'purchase_price': float(purchase_price),
-                'shares': shares
-            }
+                'shares': shares,
+                'error': str(e)
+            })
+
     return jsonify(stock_values)
 
 # API route that fetches the total amount of cash the user has deposited on our platform for buying/selling stocks

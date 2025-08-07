@@ -49,7 +49,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let stock of stockList">
-            <td>{{ stock.ticker }}</td>
+            <td>{{ stock.data.stock_ticker }}</td>
             <td>{{ stock.data.stock_name }}</td>
             <td>{{ stock.data.shares }}</td>
             <td>{{ stock.data.purchase_price | currency }}</td>

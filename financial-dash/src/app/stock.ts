@@ -1,4 +1,5 @@
 export interface Stock {
+  stock_ticker: string;
   current_price: number;
   purchase_price: number;
   shares: number;
