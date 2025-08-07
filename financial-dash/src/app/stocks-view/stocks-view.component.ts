@@ -30,6 +30,7 @@ modalQuantity: number = 1;
 bankAccounts: BankAccount[] = [];
 selectedBankAccount: BankAccount | null = null;
 response = '';
+confirmationMessage: string | null = null;
 
 constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioService: PortfolioService) {
   this.isBrowser = isPlatformBrowser(platformId);
@@ -114,44 +115,61 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
   
   confirmTransaction() {
     if (!this.selectedStock || !this.modalQuantity) return;
-      var total = 0;
-    if(this.modalType === 'buy') {
-       total = this.selectedStock.current_price * this.modalQuantity;
-    }else {
-       total = this.selectedStock.data.current_price * this.modalQuantity;
+  
+    let total = 0;
+    if (this.modalType === 'buy') {
+      total = this.selectedStock.current_price * this.modalQuantity;
+    } else {
+      total = this.selectedStock.data.current_price * this.modalQuantity;
     }
   
     if (this.modalType === 'buy') {
-      console.log(`Buying ${this.modalQuantity} of ${this.selectedStock.ticker} for ${total}`);
-      this.portfolioService.buyStock(this.selectedStock.stock_ticker, this.modalQuantity, this.selectedBankAccount == null ? 1 : 
-        this.selectedBankAccount.bank_id).subscribe({
-          next: (data) => {
-            this.response = data.message ?? '';
-            this.refreshStocks();
-          },
-          error: (err) => {
-            this.response = 'Transaction failed.';
-            console.error(err);
-          }
-        });
+      console.log(`Buying ${this.modalQuantity} of ${this.selectedStock.stock_ticker} for ${total}`);
+      this.portfolioService.buyStock(
+        this.selectedStock.stock_ticker,
+        this.modalQuantity,
+        this.selectedBankAccount?.bank_id || 1
+      ).subscribe({
+        next: (data) => {
+          this.response = data.message ?? 'Stock purchase successful!';
+          this.refreshStocks();
+          this.clearResponseAfterDelay();
+        },
+        error: (err) => {
+          this.response = 'Stock purchase failed.';
+          console.error(err);
+          this.clearResponseAfterDelay();
+        }
+      });
     } else {
-      console.log(`Selling ${this.modalQuantity} of ${this.selectedStock.ticker} for ${total}`);
-      this.portfolioService.sellStock(this.selectedStock.data.stock_ticker, this.modalQuantity, this.selectedBankAccount == null ? 1 :
-        this.selectedBankAccount.bank_id, this.selectedStock.data.transaction_ID).subscribe({
-          next: (data) => {
-            this.response = data.message ?? '';
-            this.refreshStocks();
-          },
-          error: (err) => {
-            this.response = 'Transaction failed.';
-            console.error(err);
-          }
-        })
+      console.log(`Selling ${this.modalQuantity} of ${this.selectedStock.data.stock_ticker} for ${total}`);
+      this.portfolioService.sellStock(
+        this.selectedStock.data.stock_ticker,
+        this.modalQuantity,
+        this.selectedBankAccount?.bank_id || 1,
+        this.selectedStock.data.transaction_ID
+      ).subscribe({
+        next: (data) => {
+          this.response = data.message ?? 'Stock sale successful!';
+          this.refreshStocks();
+          this.clearResponseAfterDelay();
+        },
+        error: (err) => {
+          this.response = 'Stock sale failed.';
+          console.error(err);
+          this.clearResponseAfterDelay();
+        }
+      });
     }
   
     this.closeModal();
   }
-
+  
+  private clearResponseAfterDelay() {
+    setTimeout(() => {
+      this.response = '';
+    }, 4000); // Clear the message after 4 seconds
+  }  
   
   }
 

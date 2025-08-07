@@ -403,3 +403,105 @@ tr:last-child td {
 .loss-text {
   color: #ff4d4d;
 }
+
+/* Modal background */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(30, 0, 40, 0.8); /* dark purple transparent */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* Modal container with purplish pink theme */
+.modal {
+  background-color: #4a204a; /* dark plum */
+  color: #ffffff;
+  padding: 1.5rem 2rem;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+/* Group container for label and input */
+.form-group {
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+
+/* Labels in pinkish tone */
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #ffd6f6; /* soft pink text */
+}
+
+/* Input and select styles */
+.form-group input,
+.form-group select {
+  padding: 0.6rem;
+  border: 1px solid #d26cd5;
+  border-radius: 6px;
+  background-color: #3b1f3e; /* deep purple-pink */
+  color: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Modal action buttons */
+.modal-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.modal-actions button {
+  background: linear-gradient(135deg, #ff79c6, #bd93f9); /* pink to lavender */
+  color: white;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.modal-actions button:hover {
+  transform: scale(1.05);
+}
+
+.confirmation-toast {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: linear-gradient(135deg, #ff9af5, #b58bff);
+  color: #1c1c1c;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-30%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
