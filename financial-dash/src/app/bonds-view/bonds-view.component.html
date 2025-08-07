@@ -15,27 +15,25 @@
   <div class="portfolio-values-boxes">
     <div class="value-card">
       <h3>Portfolio Value</h3>
-      <p class="main-value">${{ globalValue | number: '1.2-2' }}</p>
+      <p class="main-value">${{ globalValue | number : "1.2-2" }}</p>
     </div>
 
     <div class="value-card">
       <h3>Net Bond Valuation</h3>
-      <p class="main-value">${{ bondValuation | number: '1.2-2' }}</p>
+      <p class="main-value">${{ bondValuation | number : "1.2-2" }}</p>
     </div>
   </div>
-
 
   <!-- Profit gain/loss sentence for bonds -->
   <div class="portfolio-profit-box">
     <p [ngClass]="getTotalBondChange() >= 0 ? 'gain-text' : 'loss-text'">
       Your portfolio has
-      {{ getTotalBondChange() >= 0 ? 'gained' : 'lost' }}
+      {{ getTotalBondChange() >= 0 ? "gained" : "lost" }}
       <strong>{{ getTotalBondChange() | currency }}</strong>
       from bonds.
     </p>
   </div>
 
-  
   <div class="dashboard-grid">
     <div class="your-bonds-box">
       <h2>Your Bonds</h2>
@@ -72,12 +70,19 @@
                 </span>
               </span>
             </td>
-            <button (click)="openModal('sell', { 
-              ticker: bond['Bond Ticker'],
-              name: bond['Bond Name'],
-              current_price: bond['Current Market Price (from YFinance)'],
-              data: bond
-            })">Sell</button>
+            <button
+              (click)="
+                openModal('sell', {
+                  ticker: bond['Bond Ticker'],
+                  name: bond['Bond Name'],
+                  current_price: bond['Current Market Price (from YFinance)'],
+                  data: bond
+                })
+              "
+              class="padd"
+            >
+              Sell
+            </button>
           </tr>
         </tbody>
       </table>
@@ -106,12 +111,18 @@
             <td>{{ marketBondValues["bond_ticker"] }}</td>
             <td>{{ marketBondValues["bond_name"] }}</td>
             <td>{{ marketBondValues["current_price"] }}</td>
-            <button (click)="openModal('buy', {
-              ticker: marketBondValues['bond_ticker'],
-              name: marketBondValues['bond_name'],
-              current_price: marketBondValues['current_price'],
-              data: marketBondValues
-            })">Buy</button>
+            <button
+              (click)="
+                openModal('buy', {
+                  ticker: marketBondValues['bond_ticker'],
+                  name: marketBondValues['bond_name'],
+                  current_price: marketBondValues['current_price'],
+                  data: marketBondValues
+                })
+              "
+            >
+              Buy
+            </button>
           </tr>
         </tbody>
       </table>
@@ -119,34 +130,29 @@
   </div>
 </div>
 
+<!--<Buy/Sell Modal -->
+<div class="modal-backdrop" *ngIf="showModal">
+  <div class="modal">
+    <h2>
+      {{ modalType === "buy" ? "Buy" : "Sell" }}
+      {{
+        modalType === "buy" ? selectedBond?.stock_ticker : selectedBond?.ticker
+      }}
+    </h2>
 
-  <!--<Buy/Sell Modal -->
-  <div class="modal-backdrop" *ngIf="showModal">
-    <div class="modal">
-      <h2>
-        {{ modalType === "buy" ? "Buy" : "Sell" }}
-        {{
-          modalType === "buy"
-            ? selectedBond?.stock_ticker
-            : selectedBond?.ticker
-        }}
-      </h2>
+    <label>Quantity:</label>
+    <input type="number" [(ngModel)]="modalQuantity" min="1" />
 
-      <label>Quantity:</label>
-      <input type="number" [(ngModel)]="modalQuantity" min="1" />
-
-      <p *ngIf="modalQuantity && selectedBond">
-        Total {{ modalType === "buy" ? "Cost" : "Return" }}:
-        {{
-          (selectedBond.current_price * modalQuantity | currency)
-        }}
-      </p>
-      <div *ngIf="response" class="response-message">
-        {{ response }}
-      </div>
-      <div class="modal-actions">
-        <button (click)="confirmTransaction()">Confirm</button>
-        <button (click)="closeModal()">Cancel</button>
-      </div>
+    <p *ngIf="modalQuantity && selectedBond">
+      Total {{ modalType === "buy" ? "Cost" : "Return" }}:
+      {{ selectedBond.current_price * modalQuantity | currency }}
+    </p>
+    <div *ngIf="response" class="response-message">
+      {{ response }}
+    </div>
+    <div class="modal-actions">
+      <button (click)="confirmTransaction()">Confirm</button>
+      <button (click)="closeModal()">Cancel</button>
     </div>
   </div>
+</div>
