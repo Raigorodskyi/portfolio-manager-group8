@@ -6,6 +6,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 from datetime import datetime
+import traceback
 
 load_dotenv()
 app = Flask(__name__)
@@ -341,13 +342,14 @@ def buy_stock_action(data):
         
         if exists:
             # Stock already exists — update it
-            existing_shares, existing_price = exists
+            existing_shares = int(exists['number_of_shares'])
+            existing_price = float(exists['purchase_price_per_share'])
             total_shares = existing_shares + number_of_shares
             new_acb = ((existing_shares * existing_price) + (number_of_shares * stock_current_price)) / total_shares
 
             cursor.execute("""
                 UPDATE Stocks
-                SET transaction_ID = %s
+                SET transaction_ID = %s,
                     number_of_shares = %s,
                     purchase_price_per_share = %s,
                     current_price_per_share = %s,
@@ -381,7 +383,7 @@ def buy_stock_action(data):
         if new_bank_balance < 0:
             cursor.execute("SELECT bank_account_name FROM Bank_Account WHERE bank_id = %s", (bank_ID,))
             error_bank_name = cursor.fetchone()
-            return {"error": f"Not enough cash in {error_bank_name['bank_account_name']}"}, 400
+            return {"error": f"Not enough cash in {str(error_bank_name['bank_account_name'])}"}, 400
 
         cursor.execute("""
             UPDATE User_portfolio
@@ -404,6 +406,9 @@ def buy_stock_action(data):
         }, 200
 
     except Exception as e:
+        traceback.print_exc()  # Print full traceback to console/log
+        print("Type of error:", type(e))
+        print("Error message:", e)
         conn.rollback()
         return {'error': str(e)}, 500
     finally:
@@ -552,19 +557,19 @@ def buy_bond(bond_ticker, number_of_bonds, bank_id):
         
         if exists:
             # Bond already exists — update it
-            existing_shares, existing_price = exists
+            existing_shares = int(exists['number_of_bonds'])
+            existing_price = float(exists['purchase_price_per_bond'])
             total_shares = existing_shares + number_of_bonds
             new_acb = ((existing_shares * existing_price) + (number_of_bonds * current_price)) / total_shares
 
             cursor.execute("""
-                UPDATE Stocks
-                SET transaction_ID = %s
+                UPDATE Bonds
+                SET transaction_ID = %s,
                     number_of_bonds = %s,
                     purchase_price_per_bond = %s,
-                    current_price_per_bond = %s,
-                    purchase_date = %s
+                    last_updated = %s
                 WHERE bond_ticker = %s
-            """, (transaction_id, total_shares, new_acb, current_price, datetime.now(), bond_ticker))
+            """, (transaction_id, total_shares, new_acb, datetime.now(), bond_ticker))
         else:
             cursor.execute("""
                 INSERT INTO Bonds (
@@ -604,9 +609,12 @@ def buy_bond(bond_ticker, number_of_bonds, bank_id):
             "transaction_id": transaction_id
         })
 
-    except mysql.connector.Error as err:
+    except Exception as e:
+        traceback.print_exc()  # Print full traceback to console/log
+        print("Type of error:", type(e))
+        print("Error message:", e)
         conn.rollback()
-        return jsonify({"error": str(err)}), 500
+        return {'error': str(e)}, 500
     finally:
         cursor.close()
         conn.close()
