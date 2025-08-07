@@ -130,14 +130,14 @@ export class PortfolioService {
     ticker: string,
     shares: number,
     bank_id: number,
-    purchase_price_per_bond: number
+    transaction_id: number
   ): Observable<SellBondResponse> {
     const payload = {
       action: 'sell',
       bond_ticker: ticker,
       number_of_bonds: shares,
       bank_ID: bank_id,
-      purchase_price_per_bond: purchase_price_per_bond,
+      transaction_ID: transaction_id,
     };
 
     console.log(payload);
