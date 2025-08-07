@@ -254,8 +254,8 @@ tr:last-child td {
 .transactions-box {
   background: #884eb8;
   border: 1px solid #2ecc71;
-  border-bottom: 2px solid #502e61;
-  border-radius: 8px;
+
+  border-radius: 20px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   color: white;
@@ -265,7 +265,7 @@ tr:last-child td {
   margin-top: 0;
   color: white;
   border-bottom: 2px solid #3498db;
-  padding-bottom: 10px;
+  padding-bottom: 20px;
   margin-bottom: 20px;
 }
 

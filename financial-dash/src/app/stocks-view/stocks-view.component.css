@@ -118,8 +118,8 @@ h1 a {
 
 .other-stocks-box {
   grid-area: top;
-  background: linear-gradient(to right, #d4c4f8, #b48ef5);
-  color: #222;
+  background: linear-gradient(to right, #9780cc, #b48ef5);
+  color: #ffffff;
 }
 
 /* Card base styles */
