@@ -28,9 +28,10 @@ export interface BuyBondResponse {
 
 export interface SellBondResponse {
   bond_ticker: string;
-    market_value: number;
-    message: string;
-    quantity_sold: number;
-    sale_value: number;
-    transaction_id: number;
+  market_value: number;
+  message: string;
+  quantity_sold: number;
+  sale_value: number;
+  original_transaction_id: number,
+  sale_transaction_id: number;
 }

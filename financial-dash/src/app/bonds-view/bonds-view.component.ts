@@ -117,7 +117,7 @@ confirmTransaction() {
   } else {
     console.log(`Selling ${this.modalQuantity} of ${this.selectedBond.ticker} for ${total} to account ${this.selectedBankAccount?.bank_id} purch price ${this.selectedBond.data['Purchase Price per Bond']}`);
     this.portfolioService.sellBond(this.selectedBond.ticker, this.modalQuantity, this.selectedBankAccount == null ? 1 : 
-      this.selectedBankAccount.bank_id, this.selectedBond.data['Purchase Price per Bond']).subscribe({
+      this.selectedBankAccount.bank_id, this.selectedBond.data['Transaction ID']).subscribe({
         next: (data) => {
           this.response = data.message ?? '';
           this.refreshBonds();
