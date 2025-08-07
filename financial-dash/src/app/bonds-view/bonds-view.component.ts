@@ -41,7 +41,7 @@ ngOnInit(): void {
   }
     this.portfolioService.getBonds().subscribe((bondsData) => {
       this.bonds = bondsData;
-
+      console.log(this.bonds);
       this.bondValuation = this.bonds.reduce((sum, bond) =>
         sum + bond['Current Market Price (from YFinance)']* bond['Number of Bonds'], 0);
     });
@@ -80,7 +80,7 @@ openModal(type: 'buy' | 'sell', bond: any) {
   this.selectedBond = bond;
   this.modalQuantity = 1;
   this.showModal = true;
-  console.log(bond.data['Purchase Price per Bond'])
+  console.log(bond.data['Transaction ID'])
 }
 
 closeModal() {

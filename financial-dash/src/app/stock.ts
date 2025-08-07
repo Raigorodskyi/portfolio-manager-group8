@@ -3,6 +3,7 @@ export interface Stock {
   purchase_price: number;
   shares: number;
   stock_name: string;
+  transaction_ID: number;
 }
 
 export class MarketStock {
