@@ -86,6 +86,7 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
   }
 
   openModal(type: 'buy' | 'sell', stock: any) {
+    this.response = '';
     this.modalType = type;
     this.selectedStock = stock;
     this.modalQuantity = 1;

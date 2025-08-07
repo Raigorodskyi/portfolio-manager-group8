@@ -76,6 +76,7 @@ getTotalBondChange(): number {
 
 
 openModal(type: 'buy' | 'sell', bond: any) {
+  this.response = '';
   this.modalType = type;
   this.selectedBond = bond;
   this.modalQuantity = 1;
