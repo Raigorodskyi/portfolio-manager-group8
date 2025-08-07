@@ -28,6 +28,7 @@ modalType: 'buy' | 'sell' = 'buy';
 selectedStock: any = null;
 modalQuantity: number = 1;
 bankAccounts: BankAccount[] = [];
+errorMessage: string = '';
 selectedBankAccount: BankAccount | null = null;
 response = '';
 confirmationMessage: string | null = null;
@@ -62,16 +63,17 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
 
   getMarketStock() {
     const query = this.searchQuery.toUpperCase();
-    this.portfolioService.getStockByTicker(query).subscribe((stockData) => {
-      this.marketStockValues = stockData;
-      console.log(this.marketStockValues);
+    this.portfolioService.getStockByTicker(query).subscribe({
+      next: (stockData) => {
+        this.marketStockValues = stockData;
+        console.log(this.marketStockValues);
+        this.errorMessage = '';
+    },
+    error: (err) => {
+      console.error('Error fetching stock:', err);
+      this.errorMessage = 'Could not fetch stock. Please check the ticker or try again later.';
+    }
 
-      // Calculate stocks total dynamically
-      this.stocksValuation = this.stockList.reduce(
-        (sum, stock) => sum + stock.data.current_price * stock.data.shares,
-        0
-      );
-      console.log(this.marketStockList);
     });
   }
 
@@ -162,7 +164,7 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
       });
     }
   
-    this.closeModal();
+    setTimeout(() => this.closeModal(), 2000);
   }
   
   private clearResponseAfterDelay() {

@@ -27,6 +27,7 @@ modalQuantity: number = 1;
 bankAccounts: BankAccount[] = [];
 selectedBankAccount: BankAccount | null = null;
 response: string = "";
+errorMessage: string = '';
 purchasePrice: number = 0;
 
 
@@ -60,11 +61,17 @@ getBondDiff(bond: Bond): number {
 getMarketBond() {
   const query = this.searchQuery.toUpperCase();
 
-  this.portfolioService.getBondByTicker(query).subscribe((bond) => {
-    this.marketBondValues = bond;
-  console.log(this.marketBondValues);
-});
-
+  this.portfolioService.getBondByTicker(query).subscribe({
+    next: (bond) => {
+      this.marketBondValues = bond;
+      console.log(this.marketBondValues);
+      this.errorMessage = '';
+    },
+    error: (err) => {
+      console.error('Error fetching bond:', err);
+      this.errorMessage = 'Could not fetch bond. Please check the ticker or try again later.';
+    }
+  });
 }
 
 getTotalBondChange(): number {

@@ -94,9 +94,12 @@
         <input
           type="text"
           [(ngModel)]="searchQuery"
-          placeholder="Search by ticker or name"
+          placeholder="Search by ticker"
         />
         <button (click)="this.getMarketBond()">Search</button>
+      </div>
+      <div *ngIf="errorMessage" class="error_msg">
+        {{ errorMessage }}
       </div>
       <table>
         <thead>
@@ -107,11 +110,12 @@
           </tr>
         </thead>
         <tbody>
+          
           <tr *ngIf="marketBondValues['bond_ticker']">
             <td>{{ marketBondValues["bond_ticker"] }}</td>
             <td>{{ marketBondValues["bond_name"] }}</td>
             <td>{{ marketBondValues["current_price"] }}</td>
-            <button
+            <button class="buy-button"
               (click)="
                 openModal('buy', {
                   ticker: marketBondValues['bond_ticker'],
