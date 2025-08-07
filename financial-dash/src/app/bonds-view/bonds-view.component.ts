@@ -87,6 +87,14 @@ closeModal() {
   this.showModal = false;
 }
 
+refreshBonds() {
+  this.portfolioService.getBonds().subscribe((bondsData) => {
+    this.bonds = bondsData;
+    this.bondValuation = this.bonds.reduce((sum, bond) =>
+      sum + bond['Current Market Price (from YFinance)'] * bond['Number of Bonds'], 0);
+  });
+}
+
 confirmTransaction() {
   if (!this.selectedBond || !this.modalQuantity) return;
 
@@ -96,14 +104,28 @@ confirmTransaction() {
     console.log(`Buying ${this.modalQuantity} of ${this.selectedBond.ticker} for ${total} from account ${this.selectedBankAccount?.bank_id}`);
 
     this.portfolioService.buyBond(this.selectedBond.ticker, this.modalQuantity, this.selectedBankAccount == null ? 1 : 
-      this.selectedBankAccount.bank_id).subscribe(data => {
-        this.response = data.message ?? '';
+      this.selectedBankAccount.bank_id).subscribe({
+        next: (data) => {
+          this.response = data.message ?? '';
+          this.refreshBonds();
+        },
+        error: (err) => {
+          this.response = 'Transaction failed.';
+          console.error(err);
+        }
       });
   } else {
     console.log(`Selling ${this.modalQuantity} of ${this.selectedBond.ticker} for ${total} to account ${this.selectedBankAccount?.bank_id} purch price ${this.selectedBond.data['Purchase Price per Bond']}`);
     this.portfolioService.sellBond(this.selectedBond.ticker, this.modalQuantity, this.selectedBankAccount == null ? 1 : 
-      this.selectedBankAccount.bank_id, this.selectedBond.data['Purchase Price per Bond']).subscribe(data => {
-        this.response = data.message ?? '';
+      this.selectedBankAccount.bank_id, this.selectedBond.data['Purchase Price per Bond']).subscribe({
+        next: (data) => {
+          this.response = data.message ?? '';
+          this.refreshBonds();
+        },
+        error: (err) => {
+          this.response = 'Transaction failed.';
+          console.error(err);
+        }
       });
   }
 
