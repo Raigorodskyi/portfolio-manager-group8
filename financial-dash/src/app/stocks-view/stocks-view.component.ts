@@ -136,7 +136,17 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
         });
     } else {
       console.log(`Selling ${this.modalQuantity} of ${this.selectedStock.ticker} for ${total}`);
-      // TODO: Add sell logic
+      this.portfolioService.sellStock(this.selectedStock.data.stock_ticker, this.modalQuantity, this.selectedBankAccount == null ? 1 :
+        this.selectedBankAccount.bank_id, this.selectedStock.data.transaction_ID).subscribe({
+          next: (data) => {
+            this.response = data.message ?? '';
+            this.refreshStocks();
+          },
+          error: (err) => {
+            this.response = 'Transaction failed.';
+            console.error(err);
+          }
+        })
     }
   
     this.closeModal();

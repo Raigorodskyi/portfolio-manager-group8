@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { Bond, BuyBondResponse, MarketBond, SellBondResponse } from '../bond';
-import { Stock, StockBuyMessage } from '../stock';
+import { Stock, StockBuyMessage, StockSellMessage } from '../stock';
 
 @Injectable({
   providedIn: 'root',
@@ -69,21 +69,21 @@ export class PortfolioService {
   sellStock(
     ticker: string,
     shares: number,
-    bank_id: string,
-    purchase_price_per_stock: number
-  ): Observable<{ stock: Stock }> {
+    bank_id: number,
+    transaction_ID: number
+  ): Observable<StockSellMessage> {
     const payload = {
       action: 'sell',
       stock_ticker: ticker,
       number_of_shares: shares,
       bank_ID: bank_id,
-      purchase_price_per_stock: purchase_price_per_stock,
+      transaction_ID: transaction_ID,
     };
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
     });
 
-    return this.http.post<{ stock: Stock }>(this.getStockUrl, payload, {
+    return this.http.post<StockSellMessage>(this.getStockUrl, payload, {
       headers,
     });
   }
