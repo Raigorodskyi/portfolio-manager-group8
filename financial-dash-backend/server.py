@@ -620,8 +620,8 @@ def bond_action():
     elif action == 'sell':
         quantity = data['number_of_bonds']
         bank_id = data['bank_ID']
-        purchase_price = data['purchase_price_per_bond']
-        return sell_bond(ticker, quantity, bank_id, purchase_price)
+        transaction_id = data['transaction_ID']
+        return sell_bond(ticker, quantity, bank_id, transaction_id)
     elif action == 'view':
         return view_bond(ticker)
     else:
