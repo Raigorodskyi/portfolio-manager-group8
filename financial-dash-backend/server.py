@@ -28,7 +28,7 @@ def get_stock_value():
     cursor = conn.cursor(dictionary=True)
 
     query = """
-        SELECT stock_ticker, number_of_shares, purchase_price_per_share
+        SELECT stock_ticker, number_of_shares, purchase_price_per_share, transaction_ID
         FROM Stocks;
     """
     cursor.execute(query)
@@ -41,6 +41,7 @@ def get_stock_value():
         ticker = row['stock_ticker']
         shares = row['number_of_shares']
         purchase_price = row['purchase_price_per_share']
+        transaction_ID = row['transaction_ID']
         try:
             stock = yf.Ticker(ticker)
             current_price = stock.info['regularMarketPrice']
@@ -48,6 +49,7 @@ def get_stock_value():
             if current_price is not None and stock_name is not None:
                 stock_values[ticker] = {
                     'stock_name': stock_name,
+                    'transaction_ID': transaction_ID,
                     'purchase_price': float(purchase_price),
                     'shares': shares,
                     'current_price': float(current_price)
@@ -124,7 +126,7 @@ def get_all_bonds():
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT bond_name, bond_ticker, purchase_price_per_bond, bond_yield, number_of_bonds
+            SELECT bond_name, bond_ticker, purchase_price_per_bond, bond_yield, number_of_bonds, transaction_ID
             FROM Bonds
         """)
         bonds = cursor.fetchall()
@@ -149,6 +151,7 @@ def get_all_bonds():
                 "Purchase Price per Bond": float(bond['purchase_price_per_bond']),
                 "Bond Yield (%)": float(bond['bond_yield']),
                 "Number of Bonds": bond['number_of_bonds'],
+                "Transaction ID": bond['transaction_ID'],
                 "Current Market Price (from YFinance)": round(float(current_price), 2) if current_price else "Unavailable"
             })
 

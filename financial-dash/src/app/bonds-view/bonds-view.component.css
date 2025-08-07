@@ -122,7 +122,9 @@ h1 a {
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
-
+.padd {
+  margin-top: 35px;
+}
 /* Headings */
 h2 {
   margin-top: 0;
@@ -144,6 +146,11 @@ h2 {
   color: #9cffac;
 }
 
+.loss {
+  font-size: 1.2rem;
+  margin-top: 0.25rem;
+  color: rgb(243, 9, 9);
+}
 /* Tables */
 table {
   width: 100%;
@@ -376,7 +383,6 @@ tr:last-child td {
   margin: 0;
 }
 
-
 /* Highlighted profit message */
 .portfolio-profit-box {
   text-align: center;
@@ -403,4 +409,3 @@ tr:last-child td {
 .loss-text {
   color: rgb(243, 9, 9);
 }
-

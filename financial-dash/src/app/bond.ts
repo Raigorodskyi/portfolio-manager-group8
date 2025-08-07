@@ -5,6 +5,7 @@ export interface Bond {
   'Current Market Price (from YFinance)': number;
   'Number of Bonds': number;
   'Purchase Price per Bond': number;
+  'Transaction ID': number;
 }
 
 export interface MarketBond {
