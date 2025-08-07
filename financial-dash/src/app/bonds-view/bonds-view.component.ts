@@ -46,16 +46,20 @@ ngOnInit(): void {
       this.bondValuation = this.bonds.reduce((sum, bond) =>
         sum + bond['Current Market Price (from YFinance)']* bond['Number of Bonds'], 0);
     });
-    this.portfolioService.getBankAccounts().subscribe((response) => {
-      this.bankAccounts = response.bank_accounts;
-      this.selectedBankAccount = this.bankAccounts[0];
-      console.log(this.bankAccounts);
-    });
+    this.getBankAccounts();
 }
 
 getBondDiff(bond: Bond): number {
   return (bond['Current Market Price (from YFinance)'] - bond['Purchase Price per Bond']) 
               * bond['Number of Bonds'];
+}
+
+getBankAccounts() {
+  this.portfolioService.getBankAccounts().subscribe((response) => {
+    this.bankAccounts = response.bank_accounts;
+    this.selectedBankAccount = this.bankAccounts[0];
+    console.log(this.bankAccounts);
+  });
 }
 
 getMarketBond() {
@@ -83,6 +87,7 @@ getTotalBondChange(): number {
 
 
 openModal(type: 'buy' | 'sell', bond: any) {
+  this.getBankAccounts();
   this.response = '';
   this.modalType = type;
   this.selectedBond = bond;

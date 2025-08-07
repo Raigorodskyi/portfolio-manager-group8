@@ -54,6 +54,10 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
         0
       );
     });
+    this.getBankAccounts();
+  }
+
+  getBankAccounts() {
     this.portfolioService.getBankAccounts().subscribe((response) => {
       this.bankAccounts = response.bank_accounts;
       this.selectedBankAccount = this.bankAccounts[0];
@@ -89,6 +93,7 @@ constructor(@Inject(PLATFORM_ID) private platformId: Object, private portfolioSe
   }
 
   openModal(type: 'buy' | 'sell', stock: any) {
+    this.getBankAccounts();
     this.response = '';
     this.modalType = type;
     this.selectedStock = stock;
