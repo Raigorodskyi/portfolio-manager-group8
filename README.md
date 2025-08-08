@@ -46,11 +46,11 @@ To start the Angular frontend:
 - **Parameters:**
   - **`view`** → requires `stock_ticker`
   - **`buy`** → requires `stock_ticker`, `number_of_shares`, `bank_ID`
-  - **`sell`** → requires everything from **buy** + `purchase_price_per_stock`
+  - **`sell`** → requires everything from **buy**
 
 #### **Bonds**
 **Endpoint:** `/api/bond_action`  
 - Same as `stock_action` but for bonds:
   - **`view`** → requires `bond_ticker`
   - **`buy`** → requires `bond_ticker`, `number_of_bonds`, `bank_ID`
-  - **`sell`** → requires everything from **buy** + `purchase_price_per_bond`
+  - **`sell`** → requires everything from **buy**
