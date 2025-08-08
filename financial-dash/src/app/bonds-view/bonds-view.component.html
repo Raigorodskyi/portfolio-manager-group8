@@ -162,9 +162,7 @@
     <p *ngIf="modalQuantity && selectedBond">
       Total {{ modalType === "buy" ? "Cost" : "Return" }}:
       {{
-        modalType === "sell"
-          ? (selectedBond.data.current_price * modalQuantity | currency)
-          : (selectedBond.current_price * modalQuantity | currency)
+         (selectedBond.current_price * modalQuantity | currency)
       }}
     </p>
 
